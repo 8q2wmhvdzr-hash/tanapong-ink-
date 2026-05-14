@@ -275,7 +275,7 @@
       ]));
     }
 
-    // ระบบคลิกบนพื้นที่ว่างใดๆ เพื่อพับปิดกระดิ่งแจ้งเตือนทันที
+    // ฟังก์ชันระบบปิดกระดิ่งเมื่อคลิกนอกพื้นที่ 100%
     document.addEventListener('click', (e) => {
       const panel = document.getElementById('notification-panel');
       if (panel && !panel.classList.contains('hidden')) {
@@ -299,6 +299,18 @@
       }
     });
 
+    // แก้ไขชิ้นส่วนฟังก์ชันสลับฟอร์มล็อกอิน-ลงทะเบียนหน้าบ้านที่หายไป
+    function toggleAuthForm(showRegister) {
+      document.getElementById('login-error').classList.add('hidden');
+      if (showRegister) {
+        document.getElementById('form-login').classList.add('hidden');
+        document.getElementById('form-register').classList.remove('hidden');
+      } else {
+        document.getElementById('form-register').classList.add('hidden');
+        document.getElementById('form-login').classList.remove('hidden');
+      }
+    }
+
     function loadCachedLayout() {
       const cachedData = localStorage.getItem('ink_inventory_cache');
       if (cachedData) {
@@ -308,7 +320,7 @@
       }
     }
 
-    // ฟังก์ชันเปิดหน้าต่างเลือกบัญชี Google จริงแบบคุมโทน
+    // ฟังก์ชันเปิดหน้าต่างเลือกบัญชี Google จำลองตามโครงสร้างรูปภาพ
     function openGoogleAuthModal() {
       const m = document.getElementById('google-auth-modal');
       if (m) {
