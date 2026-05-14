@@ -155,7 +155,7 @@
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300">
       <div id="modal-color" class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center text-white text-xl font-bold shadow-inner"></div>
       <h3 id="modal-title" class="text-xl md:text-2xl font-bold mb-1"></h3>
-      <p id="modal-sub" class="text-[10px] text-slate-400 mb-8 uppercase tracking-widest break-all px-2"></p>
+      <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest break-all px-2"></p>
       
       <div class="mb-4">
         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left mb-1.5 pl-1">ระบุจำนวนสินค้า</label>
@@ -211,8 +211,9 @@
   </div>
 
   <script>
-    // ⚠️ นำ Google Client ID จาก Google Cloud Console มากรอกตรงนี้เพื่อให้ระบบแสดงกล่องแบบภาพสากล
-    const GOOGLE_CLIENT_ID = "https://script.google.com/macros/s/AKfycbzgBnotHKR7t66SqBKMgHCU_LPnOGFeducadyTZqydFlLmMX2Jb7TXHx3yidibhjn_M/exec"; 
+    // ⚠️ ลิงก์จากคำขอของคุณถูกวางลงในตำแหน่งที่ถูกต้องในระบบเรียบร้อยแล้วครับ
+    const API_URL = "https://script.google.com/macros/s/AKfycbzgBnotHKR7t66SqBKMgHCU_LPnOGFeducadyTZqydFlLmMX2Jb7TXHx3yidibhjn_M/exec"; 
+    const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"; 
     
     let inventory = [];
     let currentMachine = 'all', currentModalTask = null, currentAdminTask = null, currentAdminStockTask = null, chartInstance = null;
@@ -223,12 +224,10 @@
       ]));
     }
 
-    // ฟังก์ชันซ่อมระบบพับกระดิ่ง: คลิกนอกแจ้งเตือนให้ยุบตัวลงทันทีอย่างเสถียร
     document.addEventListener('click', (e) => {
       const panel = document.getElementById('notification-panel');
-      const bellBtn = document.getElementById('bell-btn');
       if (panel && !panel.classList.contains('hidden')) {
-        if (!panel.contains(e.target) && !bellBtn.contains(e.target)) {
+        if (!panel.contains(e.target) && !e.target.closest('#bell-btn')) {
           panel.classList.add('hidden');
         }
       }
@@ -257,10 +256,9 @@
       }
     }
 
-    // ฟังก์ชันยิงระเบิดหน้าจอขอใช้สิทธิ์เลือกบัญชีของ Google จริงๆ (ภาพลักษณ์ตรงตามภาพ image_857539.png)
     function openGoogleAuthModal() {
       if (GOOGLE_CLIENT_ID.includes("YOUR_GOOGLE_CLIENT_ID")) {
-        alert("กรุณากรอก Google Client ID ของคุณในโค้ดสคริปต์บรรทัดที่ 109 ก่อนเปิดใช้งานระบบเชื่อมต่อหน้าจริงของ Google");
+        alert("กรุณากรอก Google Client ID ของคุณในโค้ดสคริปต์บรรทัดที่ 110 ก่อนเปิดใช้งานระบบเชื่อมต่อหน้าจริงของ Google");
         return;
       }
       try {
