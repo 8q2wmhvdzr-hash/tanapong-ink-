@@ -166,7 +166,7 @@
   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbz0OL53z9mF_MxBDXtK3e5WyTpStlnh4WifED6Er_FYqiJCVMsxmLLZactrLpS87los/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbwIztnBap4TR6fXBWgq3HPEo5QMEG_3kz7ijXkD-7VzvIF8Bd31Ry9WD655GR5Kgk6L/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
     let cachedLogs = [], lastLogFetchTime = 0;
 
@@ -421,7 +421,28 @@
 
     function renderMachines() { 
       const list = [...new Set(inventory.map(i => i.machine))].filter(m => m && String(m).trim() !== ''); 
-      document.getElementById('machine-menu').innerHTML = list.map(m => `<button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-6 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold"><i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span></button>`).join(''); 
+      
+      const groups = { 'Cylinder': [], 'Flatbase': [], 'DTF & UV DTF': [], 'DTG': [], 'Other': [] };
+      
+      list.forEach(m => {
+        const lowerM = m.toLowerCase();
+        if (lowerM.includes('cylinder')) groups['Cylinder'].push(m);
+        else if (lowerM.includes('flatbase')) groups['Flatbase'].push(m);
+        else if (lowerM.includes('dtf')) groups['DTF & UV DTF'].push(m);
+        else if (lowerM.includes('dtg')) groups['DTG'].push(m);
+        else groups['Other'].push(m);
+      });
+
+      let html = '';
+      for (const [groupName, machines] of Object.entries(groups)) {
+        if (machines.length > 0) {
+          html += `<div class="pt-4 pb-1 px-4 text-[9px] font-bold text-blue-300/70 uppercase tracking-widest">${groupName}</div>`;
+          html += machines.map(m => `<button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-6 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold"><i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span></button>`).join('');
+        }
+      }
+
+      document.getElementById('machine-menu').innerHTML = html; 
+      
       const mSelect = document.getElementById('chart-machine'); 
       if(mSelect){ 
         const cur = mSelect.value; 
