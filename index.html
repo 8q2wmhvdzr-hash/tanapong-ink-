@@ -61,7 +61,7 @@
         <button onclick="changeView('all'); toggleSidebarMobile(false)" id="nav-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition sidebar-active font-bold"><i data-lucide="layout-grid"></i> หน้ารวมทั้งหมด</button>
         <button onclick="changeView('summary'); toggleSidebarMobile(false)" id="nav-summary" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-60 font-bold"><i data-lucide="bar-chart-3"></i> สรุปและรายงาน</button>
         <button onclick="changeView('users'); toggleSidebarMobile(false)" id="nav-users" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-60 hidden text-orange-300 font-bold"><i data-lucide="users"></i> จัดการผู้ใช้งาน</button>
-        <div class="pt-6 pb-2 px-4 text-[10px] font-bold text-blue-300 uppercase tracking-widest border-t border-white/5 mt-4 font-bold">คลังเครื่องจักร</div>
+        <div class="pt-6 pb-2 px-4 text-[12px] font-bold text-blue-300 uppercase tracking-widest border-t border-white/5 mt-4 font-bold">Machine</div>
         <div id="machine-menu" class="space-y-1"></div>
       </nav>
       <div class="p-4 border-t border-white/10"><button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-600/20 hover:bg-red-600 transition text-sm font-medium font-bold"><i data-lucide="log-out" class="w-4 h-4"></i> ออกจากระบบ</button></div>
@@ -166,7 +166,7 @@
   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbz0OL53z9mF_MxBDXtK3e5WyTpStlnh4WifED6Er_FYqiJCVMsxmLLZactrLpS87los/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbwF_Ld8SXo12NBUVS65r-WgZmv2sCOOBuzjOyZ8-8695VwaBpEII7MH_BHLJo9mQVsn/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
     let cachedLogs = [], lastLogFetchTime = 0;
 
