@@ -166,7 +166,7 @@
   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzbIWPzPc2floc2PaOZ_jFWiNc_9-1vFlEbFKg9ogVHWttlXr6zgemj_ItbuT9osE7H/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbwIztnBap4TR6fXBWgq3HPEo5QMEG_3kz7ijXkD-7VzvIF8Bd31Ry9WD655GR5Kgk6L/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
     let cachedLogs = [], lastLogFetchTime = 0;
 
@@ -199,7 +199,6 @@
           if (dateStr) {
             const d = new Date(dateStr);
             if (!isNaN(d)) {
-              // คำนวณเวลาไทยและปรับฟอร์แมตวันที่ตามที่ต้องการ
               const thaiTime = new Date(d.getTime() + (7 * 60 * 60 * 1000));
               const day = String(thaiTime.getUTCDate()).padStart(2, '0');
               const month = String(thaiTime.getUTCMonth() + 1).padStart(2, '0');
@@ -210,7 +209,6 @@
               dateStr = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
             }
           }
-          // คืนค่าการแยกด้วยลูกน้ำ (,) แบบไม่มีอัญประกาศครอบ เพื่อให้ Excel แตกเป็นคอลัมน์เหมือนเดิม
           return `${dateStr},` + l.slice(1).map(v => (v !== null && v !== undefined ? v : '')).join(',');
         }).join("\n");
         
@@ -395,6 +393,18 @@
     function loadUserManagement() {
       document.getElementById('user-management-grid').innerHTML = usersDB.map((u, i) => `
         <div class="bg-white p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between shadow-sm hover:shadow-md transition-all"><div class="flex justify-between items-start mb-4"><div class="p-3 bg-slate-50 rounded-2xl"><i data-lucide="user" class="w-5 h-5 text-[#001b6e]"></i></div><span class="px-3 py-1 bg-blue-100 text-[#001b6e] text-[9px] font-extrabold rounded-full uppercase italic">${u[2]}</span></div><h4 class="font-bold text-slate-800 text-lg truncate mb-5">${u[0]}</h4><div class="flex items-center justify-end gap-2 border-t pt-4"><button onclick="openAdminUserActionModal(${i})" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase">แก้ไข</button>${u[0]!=='admin' ? `<button onclick="askDelete('${u[0]}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase">ลบ</button>`:''}</div></div>`).join('');
+      lucide.createIcons();
+    }
+
+    // ฟังก์ชันที่หายไป เติมกลับเข้ามาให้แล้วครับ
+    function openAdminUserActionModal(idx) {
+      currentAdminUserTask = idx;
+      document.getElementById('admin-action-modal').classList.add('modal-show');
+      document.getElementById('admin-action-title').innerText = idx !== null ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มพนักงานใหม่';
+      document.getElementById('admin-action-user').value = idx !== null ? usersDB[idx][0] : '';
+      document.getElementById('admin-action-pass').value = idx !== null ? usersDB[idx][1] : '';
+      document.getElementById('admin-action-icon').innerHTML = idx !== null ? '<i data-lucide="user-cog" class="w-8 h-8"></i>' : '<i data-lucide="user-plus" class="w-8 h-8"></i>';
+      document.getElementById('admin-action-icon').className = `w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner ${idx !== null ? 'bg-[#001b6e]' : 'bg-green-600'}`;
       lucide.createIcons();
     }
 
