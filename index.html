@@ -102,7 +102,6 @@
                 <button onclick="exportExcel()" class="px-4 py-2 bg-green-600 text-white rounded-xl font-bold">EXCEL</button>
                 <button onclick="window.print()" class="px-4 py-2 bg-red-600 text-white rounded-xl font-bold">PDF</button>
                 <select id="chart-type" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="line">กราฟเส้น</option><option value="bar">กราฟแท่ง</option></select>
-                <select id="timeframe" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="day">รายวัน</option><option value="month">รายเดือน</option></select>
                 <select id="chart-filter" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="OUT">เบิกออก</option><option value="IN">รับเข้า</option><option value="both">ดูทั้งหมด</option></select>
                 <select id="chart-machine" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="all">ทุกเครื่อง</option></select>
                 
@@ -546,7 +545,7 @@
       
       const startDateInput = document.getElementById('chart-date-start') ? document.getElementById('chart-date-start').value : '';
       const endDateInput = document.getElementById('chart-date-end') ? document.getElementById('chart-date-end').value : '';
-      const tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value, mFilter = document.getElementById('chart-machine') ? document.getElementById('chart-machine').value : 'all'; 
+      const filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value, mFilter = document.getElementById('chart-machine') ? document.getElementById('chart-machine').value : 'all'; 
       
       const formatCE = (d) => { const dt = new Date(d); return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`; };
       
