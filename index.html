@@ -27,8 +27,12 @@
     #main-view.active { display: flex; background-color: #f1f5f9; }
     @media (max-width: 767px) { #main-view.active { display: block; } }
     @media print { aside, header, .nav-btn, #toast-container { display: none !important; } .p-8 { padding: 0 !important; } }
-    input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; transition: 0.2s; }
-    input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+    
+    /* ทำให้กล่องปฏิทินกดได้ทั้งกรอบ */
+    input[type="date"] { position: relative; font-family: 'Kanit', sans-serif; }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;
+    }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 overflow-x-hidden">
@@ -102,11 +106,15 @@
                 <select id="chart-filter" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="OUT">เบิกออก</option><option value="IN">รับเข้า</option><option value="both">ดูทั้งหมด</option></select>
                 <select id="chart-machine" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="all">ทุกเครื่อง</option></select>
                 
-                <div class="flex items-center bg-slate-100 rounded-xl px-3 py-1.5 gap-2 border border-slate-200">
-                  <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
-                  <input type="date" id="chart-date-start" onchange="loadChart()" class="bg-transparent text-xs font-bold outline-none text-slate-700 w-[105px]">
-                  <span class="text-xs text-slate-400 font-bold">-</span>
-                  <input type="date" id="chart-date-end" onchange="loadChart()" class="bg-transparent text-xs font-bold outline-none text-slate-700 w-[105px]">
+                <div class="flex items-center bg-slate-100 rounded-[1rem] px-2 py-1 gap-1 border border-slate-200">
+                  <div class="relative flex items-center gap-1.5 px-2 py-1.5 hover:bg-slate-200 rounded-lg transition overflow-hidden">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-500 pointer-events-none z-0"></i>
+                    <input type="date" id="chart-date-start" onchange="loadChart()" class="bg-transparent text-xs font-bold outline-none text-slate-700 w-[95px] cursor-pointer relative z-10">
+                  </div>
+                  <span class="text-xs text-slate-400 font-bold px-1">-</span>
+                  <div class="relative flex items-center gap-1.5 px-2 py-1.5 hover:bg-slate-200 rounded-lg transition overflow-hidden">
+                    <input type="date" id="chart-date-end" onchange="loadChart()" class="bg-transparent text-xs font-bold outline-none text-slate-700 w-[95px] cursor-pointer relative z-10">
+                  </div>
                 </div>
 
               </div>
@@ -540,25 +548,24 @@
       const endDateInput = document.getElementById('chart-date-end') ? document.getElementById('chart-date-end').value : '';
       const tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value, mFilter = document.getElementById('chart-machine') ? document.getElementById('chart-machine').value : 'all'; 
       
+      const formatCE = (d) => { const dt = new Date(d); return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`; };
+      
       let dates = []; 
       if (startDateInput && endDateInput) {
         let start = new Date(startDateInput);
         let end = new Date(endDateInput);
         if (start > end) { const temp = start; start = end; end = temp; }
         let current = new Date(start);
-        while (current <= end) {
-          dates.push(current.toLocaleDateString());
-          current.setDate(current.getDate() + 1);
-        }
+        while (current <= end) { dates.push(formatCE(current)); current.setDate(current.getDate() + 1); }
       } else if (startDateInput) {
         let baseDate = new Date(startDateInput);
-        for (let i = 0; i <= 6; i++) { const d = new Date(baseDate); d.setDate(d.getDate() + i); dates.push(d.toLocaleDateString()); }
+        for (let i = 0; i <= 6; i++) { const d = new Date(baseDate); d.setDate(d.getDate() + i); dates.push(formatCE(d)); }
       } else if (endDateInput) {
         let baseDate = new Date(endDateInput);
-        for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); }
+        for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(formatCE(d)); }
       } else {
         let baseDate = new Date();
-        for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); }
+        for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(formatCE(d)); }
       }
 
       const filteredInv = mFilter === 'all' ? inventory : inventory.filter(i => i.machine === mFilter); 
@@ -570,7 +577,7 @@
           label: ink, 
           data: dates.map(d => logs.filter(l => { 
             const invItem = inventory.find(inv => inv.id === l[1]); 
-            return new Date(l[0]).toLocaleDateString() === d && invItem?.type === ink && (mFilter === 'all' || invItem?.machine === mFilter); 
+            return formatCE(l[0]) === d && invItem?.type === ink && (mFilter === 'all' || invItem?.machine === mFilter); 
           }).reduce((sum, curr) => sum + (filter === 'both' ? curr[3] : (curr[2] === filter ? curr[3] : 0)), 0)), 
           borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true 
         }; 
