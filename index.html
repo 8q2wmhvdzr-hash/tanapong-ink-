@@ -42,8 +42,8 @@
     <div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 relative border border-slate-100">
       <div id="login-error" class="hidden mb-4 p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold border border-red-100 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4"></i><span id="login-error-text">ข้อผิดพลาด</span></div>
       <div class="space-y-4">
-        <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 pl-1 font-bold">ชื่อผู้ใช้งาน</label><input type="text" id="login-user" placeholder="Username" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold transition-all font-bold"></div>
-        <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 pl-1 font-bold">รหัสผ่าน</label><input type="password" id="login-pass" placeholder="••••••••" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold transition-all font-bold"></div>
+        <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 pl-1 font-bold">ชื่อผู้ใช้งาน</label><input type="text" id="login-user" onkeypress="if(event.key==='Enter') document.getElementById('login-btn-action').click()" placeholder="Username" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold transition-all font-bold"></div>
+        <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 pl-1 font-bold">รหัสผ่าน</label><input type="password" id="login-pass" onkeypress="if(event.key==='Enter') document.getElementById('login-btn-action').click()" placeholder="••••••••" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold transition-all font-bold"></div>
         <button id="login-btn-action" onclick="handleLogin()" class="w-full bg-[#102a96] text-white py-4 rounded-2xl font-bold hover:bg-blue-800 shadow-xl transition-all active:scale-95 font-bold">เข้าสู่ระบบ</button>
       </div>
     </div>
@@ -123,8 +123,8 @@
       <div id="modal-color" class="w-16 h-16 rounded-2xl mx-auto mb-4 border border-slate-50 shadow-inner"></div>
       <h3 id="modal-title" class="text-2xl font-bold mb-1 text-slate-800 font-bold"></h3>
       <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase break-all font-bold tracking-widest"></p>
-      <div class="mb-4 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">ระบุจำนวนสินค้า</label><input type="number" id="modal-qty" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all font-bold"></div>
-      <div id="modal-remark-container" class="mb-8 text-left hidden"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">หมายเหตุ</label><input type="text" id="modal-remark" placeholder="..." class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-semibold font-bold"></div>
+      <div class="mb-4 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">ระบุจำนวนสินค้า</label><input type="number" id="modal-qty" onkeypress="if(event.key==='Enter') document.getElementById('modal-submit').click()" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all font-bold"></div>
+      <div id="modal-remark-container" class="mb-8 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">หมายเหตุ</label><input type="text" id="modal-remark" onkeypress="if(event.key==='Enter') document.getElementById('modal-submit').click()" placeholder="..." class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-semibold font-bold"></div>
       <div class="flex gap-4 font-bold">
         <button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button>
         <button id="modal-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">ตกลง</button>
@@ -137,8 +137,8 @@
       <div id="admin-action-icon" class="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner font-bold"></div>
       <h3 id="admin-action-title" class="text-2xl font-bold mb-8 text-slate-800 font-bold"></h3>
       <div class="space-y-4 mb-8 text-left">
-        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Username</label><input type="text" id="admin-action-user" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div>
-        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label><input type="password" id="admin-action-pass" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div>
+        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Username</label><input type="text" id="admin-action-user" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div>
+        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label><input type="password" id="admin-action-pass" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div>
       </div>
       <div class="flex gap-4"><button onclick="closeAdminActionModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="admin-action-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div>
     </div>
@@ -158,7 +158,7 @@
       <div id="admin-stock-color" class="w-16 h-16 rounded-2xl mx-auto mb-4 shadow-inner border"></div>
       <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">แก้ไขยอดสต็อก</h3>
       <p id="admin-stock-sub" class="text-[10px] text-slate-400 mb-8 uppercase break-all font-bold"></p>
-      <div class="mb-8 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label><input type="number" id="admin-stock-qty" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all"></div>
+      <div class="mb-8 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label><input type="number" id="admin-stock-qty" onkeypress="if(event.key==='Enter') document.getElementById('admin-stock-submit').click()" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all"></div>
       <div class="flex gap-4"><button onclick="closeAdminStockModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl">ยกเลิก</button><button id="admin-stock-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div>
     </div>
   </div>
@@ -235,13 +235,10 @@
       document.getElementById('modal-sub').innerText = id;
       document.getElementById('modal-color').style.backgroundColor = hex;
       document.getElementById('modal-qty').value = '';
+      
       const remarkContainer = document.getElementById('modal-remark-container');
-      if (type === 'OUT') {
-        remarkContainer.classList.remove('hidden');
-        document.getElementById('modal-remark').value = '';
-      } else {
-        remarkContainer.classList.add('hidden');
-      }
+      remarkContainer.classList.remove('hidden');
+      document.getElementById('modal-remark').value = '';
     }
 
     document.getElementById('modal-submit').onclick = async () => {
@@ -396,7 +393,6 @@
       lucide.createIcons();
     }
 
-    // ฟังก์ชันที่หายไป เติมกลับเข้ามาให้แล้วครับ
     function openAdminUserActionModal(idx) {
       currentAdminUserTask = idx;
       document.getElementById('admin-action-modal').classList.add('modal-show');
@@ -424,7 +420,7 @@
     };
 
     function renderMachines() { 
-      const list = [...new Set(inventory.map(i => i.machine))]; 
+      const list = [...new Set(inventory.map(i => i.machine))].filter(m => m && m.trim() !== ''); 
       document.getElementById('machine-menu').innerHTML = list.map(m => `<button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-6 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold"><i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span></button>`).join(''); 
       const mSelect = document.getElementById('chart-machine'); 
       if(mSelect){ 
