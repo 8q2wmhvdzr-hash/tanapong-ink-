@@ -306,10 +306,6 @@
       document.getElementById('main-view').classList.add('active');
       if (role === 'admin') document.getElementById('nav-users').classList.remove('hidden');
       renderFromCache(); init(); loadNotificationHistory();
-      
-      const savedView = localStorage.getItem('ink_saved_view') || 'all';
-      const savedMachine = localStorage.getItem('ink_saved_machine') || null;
-      changeView(savedView, savedMachine);
 
       setInterval(async () => {
         await fetchUsers(); 
@@ -431,7 +427,17 @@
       lucide.createIcons(); 
     }
     
-    function renderFromCache() { const cached = localStorage.getItem('ink_inventory_cache'); if (cached) { inventory = JSON.parse(cached); renderCards(currentMachine==='all'?null:currentMachine); renderMachines(); } }
+    function renderFromCache() { 
+      const cached = localStorage.getItem('ink_inventory_cache'); 
+      if (cached) { 
+        inventory = JSON.parse(cached); 
+        renderMachines(); 
+      } 
+      const savedView = localStorage.getItem('ink_saved_view') || 'all'; 
+      const savedMachine = localStorage.getItem('ink_saved_machine') || null; 
+      changeView(savedView, savedMachine); 
+    }
+    
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if (s) { sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden'); } else { sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden'); } }
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
     function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
