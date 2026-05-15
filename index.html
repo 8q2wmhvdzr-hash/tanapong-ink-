@@ -168,6 +168,7 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwIztnBap4TR6fXBWgq3HPEo5QMEG_3kz7ijXkD-7VzvIF8Bd31Ry9WD655GR5Kgk6L/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
+    let cachedLogs = [], lastLogFetchTime = 0; // เพิ่มตัวแปรสำหรับจำค่ากราฟ
 
     function updateLoadingBar(percent, show = true) {
       const bar = document.getElementById('top-loading-bar');
@@ -198,7 +199,6 @@
           if (dateStr) {
             const d = new Date(dateStr);
             if (!isNaN(d)) {
-              // คำนวณเป็นเวลาประเทศไทย (+7)
               const thaiTime = new Date(d.getTime() + (7 * 60 * 60 * 1000));
               const day = String(thaiTime.getUTCDate()).padStart(2, '0');
               const month = String(thaiTime.getUTCMonth() + 1).padStart(2, '0');
@@ -266,6 +266,7 @@
       try {
         await fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${amt}&type=${type}&remark=${encodeURIComponent(remark)}`);
         document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
+        lastLogFetchTime = 0; // เคลียร์แคชกราฟเมื่อมีการอัพเดทสต็อก
         init(); loadNotificationHistory();
       } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
     };
@@ -308,6 +309,11 @@
       document.getElementById('main-view').classList.add('active');
       if (role === 'admin') document.getElementById('nav-users').classList.remove('hidden');
       renderFromCache(); init(); loadNotificationHistory();
+      
+      // คืนค่าหน้าล่าสุดเวลากดรีเฟรช
+      const savedView = localStorage.getItem('ink_saved_view') || 'all';
+      const savedMachine = localStorage.getItem('ink_saved_machine') || null;
+      changeView(savedView, savedMachine);
 
       setInterval(async () => {
         await fetchUsers(); 
@@ -403,7 +409,7 @@
       const diff = Math.abs(tQty-qty), type = tQty>qty?'IN':'OUT';
       const idx = inventory.findIndex(i=>i.id===id); if(idx!==-1){ inventory[idx].qty=tQty; renderCards(currentMachine==='all'?null:currentMachine); localStorage.setItem('ink_inventory_cache', JSON.stringify(inventory)); }
       showToast(`ปรับปรุงยอดสำเร็จ ยอดใหม่คือ ${tQty}`, 'success');
-      try { fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${diff}&type=${type}&remark=AdminEdit`).then(()=>{ document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-green-500"; init(); loadNotificationHistory(); }); } catch(e){}
+      try { fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${diff}&type=${type}&remark=AdminEdit`).then(()=>{ document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-green-500"; lastLogFetchTime = 0; init(); loadNotificationHistory(); }); } catch(e){}
     };
 
     function renderMachines() { 
@@ -426,17 +432,57 @@
     function askDelete(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); await fetchUsers(); loadUserManagement(); closeConfirm(); showToast("ลบแล้ว","success"); }; }
     function showToast(m, t) { const c = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-500 w-full font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-[18px] uppercase font-bold">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
     function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
-    function changeView(v, p=null) { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('sidebar-active')); document.getElementById('inventory-view').classList.add('hidden'); document.getElementById('summary-view').classList.add('hidden'); document.getElementById('users-view').classList.add('hidden'); if (v==='all') { currentMachine='all'; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById('nav-all').classList.add('sidebar-active'); renderCards(); document.getElementById('page-title').innerText="All Items"; } else if (v==='summary') { document.getElementById('summary-view').classList.remove('hidden'); document.getElementById('nav-summary').classList.add('sidebar-active'); loadChart(); document.getElementById('page-title').innerText="Summary Report"; } else if (v==='users') { document.getElementById('users-view').classList.remove('hidden'); document.getElementById('nav-users').classList.add('sidebar-active'); loadUserManagement(); document.getElementById('page-title').innerText="User Management"; } else { currentMachine=p; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById(`nav-${p.replace(/\s/g,'')}`).classList.add('sidebar-active'); renderCards(p); document.getElementById('page-title').innerText=p; } }
+    
+    function changeView(v, p=null) { 
+      // เก็บค่าลง Storage เพื่อจำหน้าล่าสุด
+      localStorage.setItem('ink_saved_view', v);
+      if(p) localStorage.setItem('ink_saved_machine', p); else localStorage.removeItem('ink_saved_machine');
+
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('sidebar-active')); 
+      document.getElementById('inventory-view').classList.add('hidden'); 
+      document.getElementById('summary-view').classList.add('hidden'); 
+      document.getElementById('users-view').classList.add('hidden'); 
+
+      if (v==='all') { 
+        currentMachine='all'; 
+        document.getElementById('inventory-view').classList.remove('hidden'); 
+        const navObj = document.getElementById('nav-all'); if(navObj) navObj.classList.add('sidebar-active'); 
+        renderCards(); document.getElementById('page-title').innerText="All Items"; 
+      } else if (v==='summary') { 
+        document.getElementById('summary-view').classList.remove('hidden'); 
+        const navObj = document.getElementById('nav-summary'); if(navObj) navObj.classList.add('sidebar-active'); 
+        loadChart(); document.getElementById('page-title').innerText="Summary Report"; 
+      } else if (v==='users') { 
+        document.getElementById('users-view').classList.remove('hidden'); 
+        const navObj = document.getElementById('nav-users'); if(navObj) navObj.classList.add('sidebar-active'); 
+        loadUserManagement(); document.getElementById('page-title').innerText="User Management"; 
+      } else { 
+        currentMachine=p; 
+        document.getElementById('inventory-view').classList.remove('hidden'); 
+        const navObj = document.getElementById(`nav-${p.replace(/\s/g,'')}`); if(navObj) navObj.classList.add('sidebar-active'); 
+        renderCards(p); document.getElementById('page-title').innerText=p; 
+      } 
+    }
     
     async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-2 text-slate-400 font-bold">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 8); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => `<div class="border-b pb-2 last:border-none border-slate-50 font-bold"><div class="flex justify-between font-bold text-slate-700"><span>${l[2]==='IN'?'🟢':'🔵'} ${l[3]} ชิ้น</span><span class="text-slate-400 text-[9px] font-bold">${new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="text-[9px] text-slate-400 truncate font-bold">${l[1]}</div></div>`).join(''); } catch(e){} }
     
     async function loadChart() { 
-      const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); 
-      const logs = (await resp.json()).slice(1), tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value, mFilter = document.getElementById('chart-machine') ? document.getElementById('chart-machine').value : 'all'; 
+      // เพิ่มระบบดึงข้อมูลแบบหน่วงเวลา 15 วินาที ลดการดึงข้อมูลซ้ำซ้อน
+      if (Date.now() - lastLogFetchTime > 15000) {
+        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+        const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); 
+        cachedLogs = (await resp.json()).slice(1);
+        lastLogFetchTime = Date.now();
+        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
+      }
+
+      const logs = cachedLogs;
+      const tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value, mFilter = document.getElementById('chart-machine') ? document.getElementById('chart-machine').value : 'all'; 
       const dates = []; 
       for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); } 
       const filteredInv = mFilter === 'all' ? inventory : inventory.filter(i => i.machine === mFilter); 
       const inkTypes = [...new Set(filteredInv.map(i => i.type))]; 
+      
       const datasets = inkTypes.map(ink => { 
         const itemInfo = filteredInv.find(inv => inv.type === ink); 
         return { 
@@ -448,6 +494,7 @@
           borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true 
         }; 
       }).filter(ds => ds.data.some(v => v > 0)); 
+      
       if (chartInstance) chartInstance.destroy(); 
       chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); 
     }
