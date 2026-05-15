@@ -27,6 +27,8 @@
     #main-view.active { display: flex; background-color: #f1f5f9; }
     @media (max-width: 767px) { #main-view.active { display: block; } }
     @media print { aside, header, .nav-btn, #toast-container { display: none !important; } .p-8 { padding: 0 !important; } }
+    input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; transition: 0.2s; }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 overflow-x-hidden">
@@ -92,14 +94,21 @@
           <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
             <div class="flex flex-wrap justify-between items-center mb-8 gap-4 font-bold">
               <h3 class="font-bold text-lg uppercase italic font-bold">สถิติเบิกจ่ายรวม</h3>
-              <div class="flex flex-wrap gap-2 text-[10px] font-bold">
+              <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold">
                 <button onclick="exportExcel()" class="px-4 py-2 bg-green-600 text-white rounded-xl font-bold">EXCEL</button>
                 <button onclick="window.print()" class="px-4 py-2 bg-red-600 text-white rounded-xl font-bold">PDF</button>
                 <select id="chart-type" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="line">กราฟเส้น</option><option value="bar">กราฟแท่ง</option></select>
                 <select id="timeframe" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="day">รายวัน</option><option value="month">รายเดือน</option></select>
                 <select id="chart-filter" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="OUT">เบิกออก</option><option value="IN">รับเข้า</option><option value="both">ดูทั้งหมด</option></select>
                 <select id="chart-machine" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="all">ทุกเครื่อง</option></select>
-                <input type="date" id="chart-date" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold">
+                
+                <div class="flex items-center bg-slate-100 rounded-xl px-3 py-1.5 gap-2 border border-slate-200">
+                  <i data-lucide="calendar" class="w-4 h-4 text-slate-500"></i>
+                  <input type="date" id="chart-date-start" onchange="loadChart()" class="bg-transparent text-xs font-bold outline-none text-slate-700 w-[105px]">
+                  <span class="text-xs text-slate-400 font-bold">-</span>
+                  <input type="date" id="chart-date-end" onchange="loadChart()" class="bg-transparent text-xs font-bold outline-none text-slate-700 w-[105px]">
+                </div>
+
               </div>
             </div>
             <div class="h-[400px] md:h-[500px] font-bold"><canvas id="mainChart"></canvas></div>
@@ -526,11 +535,32 @@
       }
 
       const logs = cachedLogs;
-      const dateInput = document.getElementById('chart-date') ? document.getElementById('chart-date').value : '';
-      const baseDate = dateInput ? new Date(dateInput) : new Date();
+      
+      const startDateInput = document.getElementById('chart-date-start') ? document.getElementById('chart-date-start').value : '';
+      const endDateInput = document.getElementById('chart-date-end') ? document.getElementById('chart-date-end').value : '';
       const tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value, mFilter = document.getElementById('chart-machine') ? document.getElementById('chart-machine').value : 'all'; 
-      const dates = []; 
-      for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); } 
+      
+      let dates = []; 
+      if (startDateInput && endDateInput) {
+        let start = new Date(startDateInput);
+        let end = new Date(endDateInput);
+        if (start > end) { const temp = start; start = end; end = temp; }
+        let current = new Date(start);
+        while (current <= end) {
+          dates.push(current.toLocaleDateString());
+          current.setDate(current.getDate() + 1);
+        }
+      } else if (startDateInput) {
+        let baseDate = new Date(startDateInput);
+        for (let i = 0; i <= 6; i++) { const d = new Date(baseDate); d.setDate(d.getDate() + i); dates.push(d.toLocaleDateString()); }
+      } else if (endDateInput) {
+        let baseDate = new Date(endDateInput);
+        for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); }
+      } else {
+        let baseDate = new Date();
+        for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); }
+      }
+
       const filteredInv = mFilter === 'all' ? inventory : inventory.filter(i => i.machine === mFilter); 
       const inkTypes = [...new Set(filteredInv.map(i => i.type))]; 
       
