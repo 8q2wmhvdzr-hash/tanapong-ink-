@@ -29,14 +29,6 @@
     @media (max-width: 767px) { #main-view.active { display: block; } }
     @media print { aside, header, .nav-btn, #toast-container { display: none !important; } .p-8 { padding: 0 !important; } }
   </style>
-  <script>
-    // ป้องกันหน้าจอขาวแวบตอนเริ่มเรนเดอร์โดยปรับพื้นหลัง HTML รอไว้ทันที
-    if (localStorage.getItem('ink_logged_in') === 'true') {
-      document.documentElement.style.backgroundColor = '#f1f5f9';
-    } else {
-      document.documentElement.style.backgroundColor = '#001b6e';
-    }
-  </script>
 </head>
 <body class="min-h-screen text-slate-800 overflow-x-hidden">
 
@@ -158,11 +150,9 @@
     </div>
   </div>
 
-  <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
-
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwIztnBap4TR6fXBWgq3HPEo5QMEG_3kz7ijXkD-7VzvIF8Bd31Ry9WD655GR5Kgk6L/exec"; 
-    let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, chartInstance = null;
+    let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
 
     function updateLoadingBar(percent, show = true) {
       const bar = document.getElementById('top-loading-bar');
@@ -170,15 +160,15 @@
       if (percent >= 100) setTimeout(() => bar.style.opacity = '0', 400);
     }
 
-    // จุดแก้ไขควบคุม: ดึงข้อมูล Cache เขียนโครงร่างทันที 0 วินาที ป้องกันหน้าขาวแวบตอนรีเฟรชหน้าจอ 100%
+    // จุดแก้ไขเด็ดขาด: ดึงข้อมูล Cache เขียนโครงร่างทันที 0 วินาที ป้องกันหน้าจอสีขาวโล่งแวบตอนรีเฟรชหน้าจอ
     window.addEventListener('DOMContentLoaded', async () => {
-      lucide.createIcons();
       const isLogged = localStorage.getItem('ink_logged_in') === 'true';
       const savedUser = localStorage.getItem('ink_current_user');
       const savedPass = localStorage.getItem('ink_current_pass');
       const savedRole = localStorage.getItem('ink_user_role');
 
       if (isLogged && savedUser && savedPass) {
+        // บังคับเปิดโชว์หน้าจอเดิมและเรนเดอร์ข้อมูลเดิมจาก Cache ทันทีโดยไม่ต้องรอเครือข่าย!
         document.getElementById('main-view').classList.add('active');
         if (savedRole === 'admin') document.getElementById('nav-users').classList.remove('hidden');
         renderFromCache();
@@ -197,6 +187,7 @@
         setupLoginLayout();
         await fetchUsers();
       }
+      lucide.createIcons();
     });
 
     async function fetchUsers() { 
@@ -210,7 +201,7 @@
       if (role === 'admin') document.getElementById('nav-users').classList.remove('hidden');
       renderFromCache(); init(); loadNotificationHistory();
 
-      // Background Auto-Sync รันพื้นหลังทุกๆ 5 วินาที
+      // Background Auto-Sync ซิงค์ข้อมูลเงียบๆ ในพื้นหลังทุกๆ 5 วินาที หน้าจอจะไม่กระพริบ
       setInterval(async () => {
         await fetchUsers(); 
         try {
@@ -287,21 +278,6 @@
       lucide.createIcons();
     }
 
-    // บล็อกการเบิกเกินสต็อกจริง
-    document.getElementById('modal-submit').onclick = async () => {
-      const val = parseFloat(document.getElementById('modal-qty').value), rmk = document.getElementById('modal-remark').value;
-      if (val > 0) {
-        const { id, type, currentQty } = currentModalTask;
-        if (type === 'OUT' && val > currentQty) { showToast(`สต็อกไม่พอเบิก! เหลือ ${currentQty}`, "error"); return; }
-        closeModal();
-        const newQty = (type === 'IN') ? currentQty + val : currentQty - val;
-        const idx = inventory.findIndex(i => i.id === id);
-        if (idx !== -1) { inventory[idx].qty = newQty; renderCards(currentMachine==='all'?null:currentMachine); localStorage.setItem('ink_inventory_cache', JSON.stringify(inventory)); }
-        showToast(`บันทึกสำเร็จ ยอดใหม่คือ ${newQty}`, "success");
-        fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${val}&type=${type}&remark=${encodeURIComponent(rmk)}`).then(() => { init(); loadNotificationHistory(); });
-      }
-    };
-
     function loadUserManagement() {
       document.getElementById('user-management-grid').innerHTML = usersDB.map((u, i) => `
         <div class="bg-slate-50 p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between hover:shadow-md transition-all">
@@ -313,13 +289,7 @@
     }
 
     async function manageUserDB(mode, user, pass, old) { await fetch(`${API_URL}?action=manageUser&mode=${mode}&user=${user}&pass=${pass}&oldUser=${old}`); await fetchUsers(); loadUserManagement(); showToast("บันทึกเรียบร้อย", "success"); }
-    
-    document.getElementById('admin-action-submit').onclick = async () => { 
-      const user = document.getElementById('admin-action-user').value.trim(), pass = document.getElementById('admin-action-pass').value.trim(); 
-      const mode = currentAdminUserTask !== null ? 'edit' : 'add', old = currentAdminUserTask !== null ? usersDB[currentAdminUserTask][0] : ''; 
-      if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง!", "error"); return; } 
-      closeAdminActionModal(); showToast("กำลังบันทึก...", "success"); await manageUserDB(mode, user, pass, old); 
-    };
+    document.getElementById('admin-action-submit').onclick = async () => { const user = document.getElementById('admin-action-user').value.trim(), pass = document.getElementById('admin-action-pass').value.trim(); const mode = currentAdminUserTask !== null ? 'edit' : 'add', old = currentAdminUserTask !== null ? usersDB[currentAdminUserTask][0] : ''; if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง!", "error"); return; } closeAdminActionModal(); showToast("กำลังบันทึก...", "success"); await manageUserDB(mode, user, pass, old); };
 
     function openModal(id, type, hex, qty) { currentModalTask={id,type,currentQty:qty}; document.getElementById('modal').classList.add('modal-show'); document.getElementById('modal-title').innerText=type==='IN'?'รับเข้าสินค้า':'เบิกสินค้าออก'; document.getElementById('modal-sub').innerText=id; document.getElementById('modal-color').style.backgroundColor=hex; document.getElementById('modal-qty').value=''; const rCont=document.getElementById('modal-remark-container'); if(type==='OUT'){ rCont.classList.remove('hidden'); document.getElementById('modal-remark').value=''; } else { rCont.classList.add('hidden'); } document.getElementById('modal-qty').focus(); }
     function openAdminUserActionModal(i=null) { currentAdminUserTask=i; document.getElementById('admin-action-modal').classList.add('modal-show'); if(i!==null){ document.getElementById('admin-action-title').innerText="แก้ไขพนักงาน"; document.getElementById('admin-action-user').value=usersDB[i][0]; document.getElementById('admin-action-pass').value=usersDB[i][1]; document.getElementById('admin-action-icon').className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white shadow-inner"; document.getElementById('admin-action-icon').innerHTML=`<i data-lucide="edit"></i>`; } else { document.getElementById('admin-action-title').innerText="เพิ่มพนักงานใหม่"; document.getElementById('admin-action-user').value=""; document.getElementById('admin-action-pass').value=""; document.getElementById('admin-action-icon').className="w-16 h-16 bg-green-600 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white shadow-inner"; document.getElementById('admin-action-icon').innerHTML=`<i data-lucide="user-plus"></i>`; } lucide.createIcons(); }
@@ -328,21 +298,13 @@
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
     function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
     function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
-    function showToast(m, t) { const c = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-500 w-full font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-[18px] uppercase font-bold">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast. FascclassList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
-    function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
-    
-    // วาดรายชื่อปุ่มตัวเลือกเครื่องจักรฝั่งซ้ายแบบ Dynamic
-    function renderMachines() { 
-      const list = [...new Set(inventory.map(i => i.machine))]; 
-      document.getElementById('machine-menu').innerHTML = list.map(m => `<button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-6 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold"><i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span></button>`).join(''); 
-      lucide.createIcons(); 
-    }
-    
+    function showToast(m, t) { const c = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-500 w-full font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-[18px] uppercase font-bold">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
+    function renderMachines() { const list = [...new Set(inventory.map(i => i.machine))]; document.getElementById('machine-menu').innerHTML = list.map(m => `<button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-6 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold"><i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span></button>`).join(''); lucide.createIcons(); }
+    function renderFromCache() { const cached = localStorage.getItem('ink_inventory_cache'); if (cached) { inventory = JSON.parse(cached); renderCards(currentMachine==='all'?null:currentMachine); renderMachines(); } }
+    function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if (s) { sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden'); } else { sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden'); } }
     function changeView(v, p=null) { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('sidebar-active')); document.getElementById('inventory-view').classList.add('hidden'); document.getElementById('summary-view').classList.add('hidden'); document.getElementById('users-view').classList.add('hidden'); if (v==='all') { currentMachine='all'; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById('nav-all').classList.add('sidebar-active'); renderCards(); document.getElementById('page-title').innerText="All Items"; } else if (v==='summary') { document.getElementById('summary-view').classList.remove('hidden'); document.getElementById('nav-summary').classList.add('sidebar-active'); loadChart(); document.getElementById('page-title').innerText="Summary Report"; } else if (v==='users') { document.getElementById('users-view').classList.remove('hidden'); document.getElementById('nav-users').classList.add('sidebar-active'); loadUserManagement(); document.getElementById('page-title').innerText="User Management"; } else { currentMachine=p; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById(`nav-${p.replace(/\s/g,'')}`).classList.add('sidebar-active'); renderCards(p); document.getElementById('page-title').innerText=p; } }
-    function filter() { const q = document.getElementById('search').value.toLowerCase(); document.querySelectorAll('.card').forEach(c => c.style.display = c.innerText.toLowerCase().includes(q) ? '' : 'none'); }
     async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-2 text-slate-400 font-bold">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 8); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => `<div class="border-b pb-2 last:border-none border-slate-50 font-bold"><div class="flex justify-between font-bold text-slate-700"><span>${l[2]==='IN'?'🟢':'🔵'} ${l[3]} ชิ้น</span><span class="text-slate-400 text-[9px] font-bold">${new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="text-[9px] text-slate-400 truncate font-bold">${l[1]}</div></div>`).join(''); } catch(e){} }
     async function loadChart() { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = (await resp.json()).slice(1), tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value; const dates = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); } const inkTypes = [...new Set(inventory.map(i => i.type))]; const datasets = inkTypes.map(ink => { const itemInfo = inventory.find(inv => inv.type === ink); return { label: ink, data: dates.map(d => logs.filter(l => new Date(l[0]).toLocaleDateString() === d && inventory.find(inv => inv.id === l[1])?.type === ink).reduce((sum, curr) => sum + (filter === 'both' ? curr[3] : (curr[2] === filter ? curr[3] : 0)), 0)), borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true }; }).filter(ds => ds.data.some(v => v > 0)); if (chartInstance) chartInstance.destroy(); chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); }
-    document.addEventListener('click', (e) => { const panel = document.getElementById('notification-panel'); const btn = document.getElementById('bell-btn'); if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.add('hidden'); });
   </script>
 </body>
 </html>
