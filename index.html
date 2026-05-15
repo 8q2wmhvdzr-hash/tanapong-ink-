@@ -15,7 +15,6 @@
     .sidebar-mobile-hide { transform: translateX(-100%); }
     .sidebar-mobile-show { transform: translateX(0); }
     
-    /* สไตล์สำหรับ Splash Screen เพื่อกำจัดหน้าขาว */
     #splash-screen {
       position: fixed; inset: 0; background: #001b6e; display: flex; flex-direction: column;
       align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease;
@@ -114,7 +113,7 @@
           <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
             <div class="mb-6 flex justify-between items-center border-b pb-4">
               <h3 class="text-lg font-bold text-slate-800">จัดการผู้ใช้งานระบบ</h3>
-              <button onclick="openAdminUserActionModal(null)" class="bg-[#102a96] text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-800 flex items-center gap-2"><i data-lucide="user-plus" class="w-4 h-4"></i> เพิ่มพนักงานใหม่</button>
+              <button onclick="openAdminUserActionModal(null)" class="bg-[#102a96] text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-800 shadow-md flex items-center gap-2"><i data-lucide="user-plus" class="w-4 h-4"></i> เพิ่มพนักงานใหม่</button>
             </div>
             <div id="user-management-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
           </div>
@@ -128,9 +127,9 @@
       <div id="modal-color" class="w-16 h-16 rounded-2xl mx-auto mb-4 border border-slate-50 shadow-inner"></div>
       <h3 id="modal-title" class="text-2xl font-bold mb-1 text-slate-800"></h3>
       <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase break-all font-bold tracking-widest"></p>
-      <div class="mb-4 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">ระบุจำนวนสินค้า</label><input type="number" id="modal-qty" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all"></div>
-      <div id="modal-remark-container" class="mb-8 text-left hidden"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">หมายเหตุ</label><input type="text" id="modal-remark" placeholder="..." class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-semibold"></div>
-      <div class="flex gap-4"><button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl">ยกเลิก</button><button id="modal-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">ตกลง</button></div>
+      <div class="mb-4 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1">ระบุจำนวนสินค้า</label><input type="number" id="modal-qty" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all"></div>
+      <div id="modal-remark-container" class="mb-8 text-left hidden"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1">หมายเหตุ</label><input type="text" id="modal-remark" placeholder="..." class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-semibold"></div>
+      <div class="flex gap-4"><button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="modal-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">ตกลง</button></div>
     </div>
   </div>
 
@@ -139,8 +138,8 @@
       <div id="admin-action-icon" class="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner"></div>
       <h3 id="admin-action-title" class="text-2xl font-bold mb-8 text-slate-800"></h3>
       <div class="space-y-4 mb-8 text-left">
-        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold font-bold">Username</label><input type="text" id="admin-action-user" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 outline-none focus:border-blue-500 text-sm font-semibold"></div>
-        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold font-bold">Password</label><input type="password" id="admin-action-pass" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 outline-none focus:border-blue-500 text-sm font-semibold"></div>
+        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest">Username</label><input type="text" id="admin-action-user" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold"></div>
+        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest">Password</label><input type="password" id="admin-action-pass" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold"></div>
       </div>
       <div class="flex gap-4"><button onclick="closeAdminActionModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="admin-action-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div>
     </div>
@@ -148,10 +147,20 @@
 
   <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1700] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300">
-      <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner font-bold"><i data-lucide="trash-2"></i></div>
+      <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner"><i data-lucide="trash-2"></i></div>
       <h3 class="text-2xl font-bold mb-2 text-slate-800">ยืนยันการลบ?</h3>
       <p id="confirm-msg" class="text-sm text-slate-400 mb-8 font-medium px-4"></p>
-      <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 shadow-xl transition-all">ลบทิ้ง</button></div>
+      <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl shadow-xl transition-all">ลบทิ้ง</button></div>
+    </div>
+  </div>
+
+  <div id="admin-stock-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1800] p-4 text-center">
+    <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300">
+      <div id="admin-stock-color" class="w-16 h-16 rounded-2xl mx-auto mb-4 shadow-inner border"></div>
+      <h3 class="text-2xl font-bold mb-2 text-slate-800">แก้ไขยอดสต็อก</h3>
+      <p id="admin-stock-sub" class="text-[10px] text-slate-400 mb-8 uppercase break-all"></p>
+      <div class="mb-8 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label><input type="number" id="admin-stock-qty" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all"></div>
+      <div class="flex gap-4"><button onclick="closeAdminStockModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl">ยกเลิก</button><button id="admin-stock-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div>
     </div>
   </div>
 
@@ -159,11 +168,14 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwIztnBap4TR6fXBWgq3HPEo5QMEG_3kz7ijXkD-7VzvIF8Bd31Ry9WD655GR5Kgk6L/exec"; 
-    let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, chartInstance = null;
+    let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
+
+    if (!localStorage.getItem('ink_user_database')) {
+      localStorage.setItem('ink_user_database', JSON.stringify([ { user: 'admin', pass: 'admin', role: 'admin' } ]));
+    }
 
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
-      // ดึงข้อมูลพนักงานก่อนเพื่อใช้เช็ค session และจัดการ Splash Screen
       await fetchUsers(); 
       const isLogged = localStorage.getItem('ink_logged_in');
       const savedUser = localStorage.getItem('ink_current_user');
@@ -177,7 +189,6 @@
         setupLoginLayout();
       }
       
-      // ปิด Splash Screen เมื่อทุกอย่างพร้อม (วาดหน้าจอเสร็จ)
       setTimeout(() => {
         const ss = document.getElementById('splash-screen');
         ss.style.opacity = '0';
@@ -190,11 +201,27 @@
       catch(e) { usersDB = [['admin','admin','admin']]; } 
     }
 
+    // ฟังก์ชันเปิดหน้าหลัก (เพิ่มระบบ Auto-Sync ทุกๆ 5 วินาทีในพื้นหลัง)
     function setupMainLayout(role) {
       document.getElementById('login-view').classList.remove('active');
       document.getElementById('main-view').classList.add('active');
       if (role === 'admin') document.getElementById('nav-users').classList.remove('hidden');
       renderFromCache(); init(); loadNotificationHistory();
+
+      // จุดแก้ไขควบคุม: ลูปดึงข้อมูลจาก Google Sheet ใหม่ทุก 5 วินาทีโดยไม่ต้องรีเฟรชหน้าเว็บ
+      setInterval(async () => {
+        await fetchUsers(); // ซิงค์รายชื่อพนักงานล่าสุด
+        try {
+          const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`);
+          inventory = await resp.json();
+          localStorage.setItem('ink_inventory_cache', JSON.stringify(inventory));
+          renderCards(currentMachine==='all'?null:currentMachine);
+          renderMachines();
+          document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0";
+        } catch(e) {
+          document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0";
+        }
+      }, 5000);
     }
 
     function setupLoginLayout() {
@@ -209,7 +236,6 @@
       const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim();
       const found = usersDB.find(x => x[0] === u && x[1] === p);
       if (found) {
-        // โชว์ Splash Screen แป๊บนึงระหว่างสลับหน้าจอ (เพื่อกันหน้าขาว)
         const ss = document.getElementById('splash-screen');
         ss.style.display = 'flex'; ss.style.opacity = '1';
         
@@ -250,7 +276,7 @@
           ${item.qty <= 5 ? '<div class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-2.5 py-1 rounded-full animate-bounce shadow-md z-10">🚨 LOW STOCK</div>' : ''}
           <div class="w-full">
             <div class="flex justify-between items-start mb-4">
-              <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-xl border shrink-0" style="background-color:${item.hex}"></div>
+              <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-xl border shrink-0 shadow-inner" style="background-color:${item.hex}"></div>
               ${isAdmin ? `<button onclick="openAdminStockModal('${item.id}', ${item.qty}, '${item.hex}')" class="p-1 bg-slate-50 text-slate-300 rounded-lg"><i data-lucide="edit-3" class="w-3 h-3"></i></button>` : ''}</div>
               <span class="text-[10px] font-extrabold px-3 py-1 bg-slate-100 text-slate-500 rounded-lg uppercase truncate">${item.machine}</span>
             </div>
@@ -280,7 +306,7 @@
 
     function loadUserManagement() {
       document.getElementById('user-management-grid').innerHTML = usersDB.map((u, i) => `
-        <div class="bg-slate-50 p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between hover:shadow-md transition-all font-bold">
+        <div class="bg-slate-50 p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between hover:shadow-md transition-all">
           <div class="flex justify-between items-start mb-4"><div class="p-3 bg-white rounded-2xl shadow-sm"><i data-lucide="user" class="w-5 h-5 text-blue-900"></i></div><span class="px-3 py-1 bg-blue-100 text-[#001b6e] text-[9px] font-extrabold rounded-full uppercase italic">${u[2]}</span></div>
           <h4 class="font-bold text-slate-800 text-lg truncate mb-5">${u[0]}</h4>
           <div class="flex items-center justify-end gap-2 border-t pt-4"><button onclick="openAdminUserActionModal(${i})" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase">แก้ไข</button>${u[0]!=='admin' ? `<button onclick="askDelete('${u[0]}')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase">ลบ</button>`:''}</div>
@@ -328,7 +354,6 @@
       chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
     }
     
-    // ระบบพับกระดิ่งอัตโนมัติ (แก้ไขเพิ่มเติมเพื่อให้เสถียรขึ้น)
     document.addEventListener('click', (e) => {
       const panel = document.getElementById('notification-panel');
       const btn = document.getElementById('bell-btn');
