@@ -8,7 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     body { font-family: 'Kanit', sans-serif; }
     .sidebar-active { background: rgba(255,255,255,0.15); border-left: 4px solid #fff; opacity: 1 !important; }
@@ -18,7 +17,7 @@
 </head>
 <body class="bg-[#f1f5f9] min-h-screen text-slate-800 flex flex-col md:flex-row overflow-x-hidden">
 
-  <div id="login-view" class="fixed inset-0 bg-[#001b6e] flex flex-col items-center justify-center p-4 z-50 transition-opacity duration-500 overflow-y-auto">
+  <div id="login-view" class="fixed inset-0 bg-[#001b6e] flex flex-col items-center justify-center p-4 z-[1000] transition-opacity duration-500 overflow-y-auto">
     <div class="mb-6 text-center text-white">
       <div class="bg-white p-4 rounded-3xl shadow-xl mb-4 inline-block"><i data-lucide="printer" class="w-12 h-12 text-[#001b6e]"></i></div>
       <h1 class="text-3xl font-bold tracking-tight uppercase">Ink Stock Pro</h1>
@@ -50,9 +49,7 @@
         </div>
 
         <button onclick="openGoogleAuthModal()" class="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 text-slate-700 py-3 rounded-2xl font-bold hover:bg-slate-50 hover:border-slate-300 transition-all text-xs shadow-sm">
-          <svg class="w-4 h-4" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.24-.73-.38-1.51-.38-2.32s.14-1.59.38-2.32L1.39 6.76C.5 8.54 0 10.52 0 12.6s.5 4.06 1.39 5.84l3.89-3.02z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
+          <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.24-.73-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           ล็อกอินด้วย Google
         </button>
       </div>
@@ -66,66 +63,44 @@
         <button onclick="changeView('all')" id="nav-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition sidebar-active"><i data-lucide="layout-grid"></i> หน้ารวมทั้งหมด</button>
         <button onclick="changeView('summary')" id="nav-summary" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-60"><i data-lucide="bar-chart-3"></i> สรุปและรายงาน</button>
         <button onclick="changeView('users')" id="nav-users" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-60 hidden text-orange-300"><i data-lucide="users"></i> จัดการผู้ใช้งาน</button>
-        
-        <div class="pt-6 pb-2 px-4 text-[10px] font-bold text-blue-300 uppercase tracking-widest border-t border-white/5 mt-4">สายการผลิตคลังเครื่องจักร</div>
+        <div class="pt-6 pb-2 px-4 text-[10px] font-bold text-blue-300 uppercase tracking-widest border-t border-white/5 mt-4">คลังเครื่องจักร</div>
         <div id="machine-menu" class="space-y-1"></div>
       </nav>
-      <div class="p-4 border-t border-white/10"><button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-200 hover:text-white transition text-sm font-medium"><i data-lucide="log-out" class="w-4 h-4"></i> ออกจากระบบ</button></div>
+      <div class="p-4 border-t border-white/10"><button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-600/20 hover:bg-red-600 transition text-sm font-medium"><i data-lucide="log-out" class="w-4 h-4"></i> ออกจากระบบ</button></div>
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-      <header class="bg-white p-4 md:p-6 shadow-sm flex justify-between items-center sticky top-0 z-50 gap-4 flex-wrap md:flex-nowrap">
-        <h2 id="page-title" class="text-lg md:text-xl font-bold uppercase truncate max-w-full">All Items</h2>
-        <div class="flex items-center gap-3 relative ml-auto shrink-0">
+      <header class="bg-white p-4 md:p-6 shadow-sm flex justify-between items-center sticky top-0 z-50">
+        <h2 id="page-title" class="text-lg md:text-xl font-bold uppercase truncate">All Items</h2>
+        <div class="flex items-center gap-3 relative ml-auto">
           <div class="relative inline-block">
             <button id="bell-btn" onclick="toggleNotification()" class="relative p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full transition outline-none">
               <i data-lucide="bell" class="w-5 h-5"></i>
               <span id="bell-badge" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span>
             </button>
-            <div id="notification-panel" class="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-[2rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100 p-5 hidden z-[100] max-h-[420px] overflow-y-auto transform origin-top-right">
-              <h4 class="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2 border-b pb-2"><i data-lucide="clock" class="w-4 h-4 text-blue-600"></i> ประวัติการดำเนินการล่าสุด</h4>
-              <div id="notification-list" class="space-y-3 text-xs text-slate-600"></div>
+            <div id="notification-panel" class="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-5 hidden z-[100] max-h-[420px] overflow-y-auto">
+              <h4 class="font-bold text-sm text-slate-800 mb-3 border-b pb-2">ประวัติการดำเนินการ</h4>
+              <div id="notification-list" class="space-y-3 text-xs"></div>
             </div>
           </div>
-          <div id="status-dot" class="w-3 h-3 rounded-full bg-slate-300 shrink-0"></div>
-          <input type="text" id="search" onkeyup="filter()" placeholder="ค้นหา..." class="px-4 py-2 rounded-full bg-slate-100 text-xs md:text-sm outline-none w-32 sm:w-48 md:w-64 focus:ring-2 focus:ring-blue-500">
+          <div id="status-dot" class="w-3 h-3 rounded-full bg-slate-300"></div>
+          <input type="text" id="search" onkeyup="filter()" placeholder="ค้นหา..." class="px-4 py-2 rounded-full bg-slate-100 text-xs md:text-sm outline-none w-32 md:w-64 focus:ring-2 focus:ring-blue-500">
         </div>
       </header>
 
       <div class="p-4 md:p-8 flex-1 min-w-0">
-        <div id="inventory-view" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 z-0"></div>
+        <div id="inventory-view" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        <div id="summary-view" class="hidden"><div class="bg-white p-6 rounded-[2.5rem] shadow-sm border h-[500px]"><canvas id="mainChart"></canvas></div></div>
         
-        <div id="summary-view" class="hidden space-y-6">
-          <div class="bg-white p-4 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-            <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
-              <h3 class="text-base md:text-lg font-bold uppercase tracking-wide">สถิติเบิกจ่าย</h3>
-              <div class="flex flex-wrap gap-2 text-[10px]">
-                <button onclick="exportExcel()" class="px-3 py-2 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition uppercase">Export Excel</button>
-                <button onclick="window.print()" class="px-3 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition uppercase">Save PDF</button>
-                <select id="chart-type" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none"><option value="line">กราฟเส้น</option><option value="bar">กราฟแท่ง</option></select>
-                <select id="timeframe" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none"><option value="day">รายวัน (7 วันล่าสุด)</option><option value="month">รายเดือน</option><option value="year">รายปี</option></select>
-                <select id="chart-filter" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none"><option value="both">ดูทั้งหมด</option><option value="IN">เฉพาะรับเข้า</option><option value="OUT">เฉพาะเบิกออก</option></select>
-              </div>
-            </div>
-            <div class="h-[300px] md:h-[400px]"><canvas id="mainChart"></canvas></div>
-          </div>
-        </div>
-
         <div id="users-view" class="hidden space-y-6">
           <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
             <div class="mb-6 flex justify-between items-center border-b pb-4">
-              <div class="flex flex-col">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i data-lucide="shield-check" class="text-orange-500"></i> บัญชีผู้ใช้งาน</h3>
-                <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Admin Only Access</span>
-              </div>
-              <button onclick="openAdminUserActionModal(null)" class="bg-[#102a96] text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-800 shadow-lg shadow-blue-100 flex items-center gap-2 transition-all">
-                <i data-lucide="user-plus" class="w-4 h-4"></i> เพิ่มผู้ใช้งาน
-              </button>
+              <h3 class="text-lg font-bold text-slate-800">จัดการผู้ใช้งาน</h3>
+              <button onclick="openAdminUserActionModal(null)" class="bg-[#102a96] text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-800 shadow-md flex items-center gap-2"><i data-lucide="user-plus" class="w-4 h-4"></i> เพิ่มผู้ใช้</button>
             </div>
             <div id="user-management-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
@@ -134,237 +109,72 @@
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300">
       <div id="modal-color" class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center text-white text-xl font-bold shadow-inner"></div>
       <h3 id="modal-title" class="text-xl md:text-2xl font-bold mb-1"></h3>
-      <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest break-all px-2"></p>
-      
-      <div class="mb-4">
-        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left mb-1.5 pl-1">ระบุจำนวนสินค้า</label>
-        <input type="number" id="modal-qty" placeholder="0" class="w-full text-center text-3xl font-bold p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all">
-      </div>
-
-      <div id="modal-remark-container" class="mb-8 text-left hidden">
-        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 pl-1">หมายเหตุการเบิกออก</label>
-        <input type="text" id="modal-remark" placeholder="ระบุเหตุผลการเบิกใช้งาน" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-medium">
-      </div>
-
-      <div class="flex gap-4">
-        <button onclick="closeModal()" class="flex-1 py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl text-sm hover:bg-slate-200 transition">ยกเลิก</button>
-        <button id="modal-submit" class="flex-1 py-3.5 bg-[#102a96] text-white font-bold rounded-xl text-sm hover:bg-blue-800">ตกลง</button>
-      </div>
+      <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase break-all"></p>
+      <div class="mb-4"><label class="block text-[10px] font-bold text-slate-400 uppercase text-left mb-1 pl-1">ระบุจำนวน</label><input type="number" id="modal-qty" class="w-full text-center text-3xl font-bold p-4 bg-slate-50 rounded-2xl border-2 outline-none focus:border-blue-500"></div>
+      <div id="modal-remark-container" class="mb-8 text-left hidden"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 pl-1">หมายเหตุ</label><input type="text" id="modal-remark" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-2 outline-none focus:border-blue-500 text-sm"></div>
+      <div class="flex gap-4"><button onclick="closeModal()" class="flex-1 py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl text-sm">ยกเลิก</button><button id="modal-submit" class="flex-1 py-3.5 bg-[#102a96] text-white font-bold rounded-xl text-sm hover:bg-blue-800">ตกลง</button></div>
     </div>
   </div>
 
   <div id="admin-action-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[70] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300">
       <div id="admin-action-icon" class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center text-white text-xl font-bold shadow-inner"></div>
-      <h3 id="admin-action-title" class="text-2xl font-bold mb-2 text-slate-800"></h3>
-      <p id="admin-action-sub" class="text-xs text-slate-400 mb-8 uppercase tracking-widest font-bold">Account Settings</p>
-      
+      <h3 id="admin-action-title" class="text-2xl font-bold mb-8 text-slate-800"></h3>
       <div class="space-y-4 mb-8 text-left">
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 pl-1">ชื่อผู้ใช้งาน (อังกฤษ/ตัวเลขเท่านั้น)</label>
-          <input type="text" id="admin-action-user" placeholder="Username" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-medium transition-all">
-        </div>
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 pl-1">รหัสผ่าน (8 ตัวอักษรขึ้นไป)</label>
-          <input type="password" id="admin-action-pass" placeholder="••••••••" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-medium transition-all">
-        </div>
-        <div id="admin-email-field">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 pl-1">อีเมล (ถ้ามี)</label>
-          <input type="email" id="admin-action-email" placeholder="email@example.com" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-medium transition-all">
-        </div>
+        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Username (อังกฤษ/เลข)</label><input type="text" id="admin-action-user" class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 outline-none focus:border-blue-500 text-sm"></div>
+        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Password (8 ตัวขึ้นไป)</label><input type="password" id="admin-action-pass" class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 outline-none focus:border-blue-500 text-sm"></div>
       </div>
-
-      <div class="flex gap-4">
-        <button onclick="closeAdminActionModal()" class="flex-1 py-3.5 bg-slate-100 text-slate-500 font-bold rounded-2xl text-sm hover:bg-slate-200 transition">ยกเลิก</button>
-        <button id="admin-action-submit" class="flex-1 py-3.5 bg-[#102a96] text-white font-bold rounded-2xl text-sm hover:bg-blue-800 shadow-xl shadow-blue-100">บันทึก</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="admin-delete-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[80] p-4 text-center">
-    <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300">
-      <div class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-red-600 text-white text-xl font-bold shadow-inner"><i data-lucide="trash-2"></i></div>
-      <h3 class="text-2xl font-bold mb-2 text-slate-800">ยืนยันการลบ</h3>
-      <p id="admin-delete-sub" class="text-xs text-slate-400 mb-8 font-bold"></p>
-      <div class="flex gap-4">
-        <button onclick="document.getElementById('admin-delete-modal').classList.remove('modal-show')" class="flex-1 py-3.5 bg-slate-100 text-slate-500 font-bold rounded-2xl text-sm transition">ยกเลิก</button>
-        <button id="admin-delete-confirm" class="flex-1 py-3.5 bg-red-600 text-white font-bold rounded-2xl text-sm hover:bg-red-700 shadow-xl shadow-red-100">ลบทิ้ง</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="admin-stock-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[70] p-4 text-center">
-    <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 md:p-10 scale-95 transition-transform duration-300">
-      <div id="admin-stock-color" class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center text-white text-xl font-bold shadow-inner border border-slate-100"></div>
-      <h3 class="text-xl md:text-2xl font-bold mb-1 text-slate-800">แก้ไขสต็อกคงเหลือ</h3>
-      <p id="admin-stock-sub" class="text-[10px] text-slate-400 mb-6 uppercase tracking-widest break-all px-2"></p>
-      <div class="mb-6"><label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider text-left mb-1.5 pl-1">จำนวนคงเหลือใหม่</label><input type="number" id="admin-stock-qty" placeholder="0" class="w-full text-center text-3xl font-bold p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all"></div>
-      <div class="flex gap-4"><button onclick="closeAdminStockModal()" class="flex-1 py-3.5 bg-slate-100 text-slate-500 font-bold rounded-xl text-sm hover:bg-slate-200 transition">ยกเลิก</button><button id="admin-stock-submit" class="flex-1 py-3.5 bg-[#0a2384] text-white font-bold rounded-xl text-sm hover:bg-blue-900 shadow-xl shadow-blue-100">บันทึกยอด</button></div>
+      <div class="flex gap-4"><button onclick="closeAdminActionModal()" class="flex-1 py-3.5 bg-slate-100 text-slate-500 font-bold rounded-2xl text-sm">ยกเลิก</button><button id="admin-action-submit" class="flex-1 py-3.5 bg-[#102a96] text-white font-bold rounded-2xl text-sm hover:bg-blue-800">บันทึก</button></div>
     </div>
   </div>
 
   <div id="google-auth-modal" class="fixed inset-0 bg-[#0c0d10]/80 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[90] p-4">
     <div class="bg-[#1f2023] w-full max-w-lg rounded-2xl shadow-2xl p-10 transform scale-95 transition-all duration-300 text-left text-white border border-slate-700/40">
-      <div class="flex items-center gap-2 mb-8"><svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.24-.73-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg><span class="text-xs font-medium text-slate-300">Google Authentication</span></div>
-      <div id="google-account-list">
-        <h3 class="text-3xl font-normal text-slate-100 mb-2">เลือกบัญชี</h3>
-        <p class="text-sm text-slate-400 mb-8">ไปยัง <span class="text-blue-400 font-semibold">Smart Ink Pro</span></p>
-        <div class="space-y-1 border-t border-b border-slate-700/60 divide-y divide-slate-700/60 mb-8">
-          <div onclick="selectGoogleAccount('tanapongb2806@gmail.com', 'ธนพงษ์')" class="flex items-center gap-4 py-4 cursor-pointer hover:bg-white/5 px-2 rounded-xl transition-all"><div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm uppercase">ธ</div><div class="min-w-0 flex-1"><p class="text-sm font-semibold text-slate-200">ธนพงษ์</p><p class="text-xs text-slate-400 truncate">tanapongb2806@gmail.com</p></div></div>
-        </div>
-        <div class="flex justify-between items-center text-xs text-slate-400"><button onclick="closeGoogleAuthModal()" class="hover:text-white transition">ยกเลิก</button><span class="text-slate-500">Google Identity Service</span></div>
+      <div class="flex items-center gap-2 mb-8"><svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.24-.73-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/></svg><span class="text-xs font-medium text-slate-300">Sign in with Google</span></div>
+      <div id="google-account-list"><h3 class="text-3xl font-normal mb-8">เลือกบัญชี</h3>
+        <div onclick="selectGoogleAccount('tanapongb2806@gmail.com', 'ธนพงษ์')" class="flex items-center gap-4 py-4 cursor-pointer hover:bg-white/5 border-t border-slate-700/60 transition-all"><div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">ธ</div><div><p class="text-sm font-semibold">ธนพงษ์</p><p class="text-xs text-slate-400">tanapongb2806@gmail.com</p></div></div>
+        <div class="flex justify-between mt-8 text-xs text-slate-500"><button onclick="closeGoogleAuthModal()">ยกเลิก</button></div>
       </div>
-      <div id="google-loading" class="hidden flex flex-col items-center justify-center py-12"><div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div><p class="text-sm font-medium text-slate-300">กำลังยืนยันตัวตน...</p></div>
+      <div id="google-loading" class="hidden flex flex-col items-center py-12"><div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div><p class="text-sm font-medium">กำลังซิงค์โปรไฟล์...</p></div>
     </div>
   </div>
 
-  <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+  <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzgBnotHKR7t66SqBKMgHCU_LPnOGFeducadyTZqydFlLmMX2Jb7TXHx3yidibhjn_M/exec"; 
-    let inventory = [];
-    let currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
+    let inventory = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, chartInstance = null;
 
+    // ฐานข้อมูลผู้ใช้เริ่มต้น
     if (!localStorage.getItem('ink_user_database')) {
-      localStorage.setItem('ink_user_database', JSON.stringify([
-        { user: 'admin', pass: 'admin', email: 'admin@ink.com', role: 'admin' }
-      ]));
+      localStorage.setItem('ink_user_database', JSON.stringify([{ user: 'admin', pass: 'admin', role: 'admin' }]));
     }
 
-    // ฟังก์ชันซ่อมระบบปิดกระดิ่ง
+    // แก้ไขระบบปิดกระดิ่ง
     document.addEventListener('click', (e) => {
       const panel = document.getElementById('notification-panel');
+      const bell = document.getElementById('bell-btn');
       if (panel && !panel.classList.contains('hidden')) {
-        if (!panel.contains(e.target) && !e.target.closest('#bell-btn')) {
-          panel.classList.add('hidden');
-        }
+        if (!panel.contains(e.target) && !bell.contains(e.target)) panel.classList.add('hidden');
       }
     });
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       if (localStorage.getItem('ink_logged_in') === 'true') {
-        loadCachedLayout();
+        renderFromCache();
         document.getElementById('login-view').classList.add('hidden');
         document.getElementById('main-view').classList.remove('hidden');
         if (localStorage.getItem('ink_user_role') === 'admin') document.getElementById('nav-users').classList.remove('hidden');
-        init();
-        loadNotificationHistory();
+        init(); loadNotificationHistory();
       }
     });
 
-    function loadCachedLayout() {
+    function renderFromCache() {
       const cached = localStorage.getItem('ink_inventory_cache');
-      if (cached) {
-        inventory = JSON.parse(cached);
-        renderCards(currentMachine === 'all' ? null : currentMachine);
-        renderMachines();
-      }
+      if (cached) { inventory = JSON.parse(cached); renderCards(currentMachine==='all'?null:currentMachine); renderMachines(); }
     }
 
-    // ฟังก์ชันเบิก-จ่าย (กู้คืนเงื่อนไขตรวจสอบเบิกเกินสต็อก)
-    document.getElementById('modal-submit').onclick = async () => {
-      const val = parseFloat(document.getElementById('modal-qty').value);
-      const remark = document.getElementById('modal-remark').value;
-      if (val > 0) {
-        const { id, type, currentQty } = currentModalTask;
-
-        // ** จุดที่กู้คืน: บล็อกการเบิกเกินสต็อก **
-        if (type === 'OUT' && val > currentQty) {
-          showToast(`สินค้ามีไม่พอ! เหลือเพียง ${currentQty} ชิ้น`, 'error');
-          return;
-        }
-
-        closeModal();
-        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
-        const newQty = (type === 'IN') ? currentQty + val : currentQty - val;
-        
-        const idx = inventory.findIndex(i => i.id === id);
-        if (idx !== -1) {
-          inventory[idx].qty = newQty;
-          renderCards(currentMachine === 'all' ? null : currentMachine);
-          localStorage.setItem('ink_inventory_cache', JSON.stringify(inventory));
-        }
-
-        showToast(`บันทึกสำเร็จ ยอดใหม่คือ ${newQty}`, 'success');
-        try {
-          let url = `${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${val}&type=${type}`;
-          if (type === 'OUT') url += `&remark=${encodeURIComponent(remark)}`;
-          fetch(url).then(() => {
-            document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
-            init(); loadNotificationHistory();
-          });
-        } catch (err) { showToast("Error connecting", "error"); }
-      }
-    };
-
-    // ระบบจัดการผู้ใช้งานสำหรับ Admin (เพิ่มใหม่ตามสั่ง)
-    function openAdminUserActionModal(index = null) {
-      const users = JSON.parse(localStorage.getItem('ink_user_database'));
-      currentAdminUserTask = index; 
-      const m = document.getElementById('admin-action-modal');
-      m.classList.add('modal-show');
-      m.querySelector('.scale-95').classList.remove('scale-95');
-      const icon = document.getElementById('admin-action-icon');
-
-      if (index !== null) { // โหมดแก้ไข
-        document.getElementById('admin-action-title').innerText = "แก้ไขผู้ใช้งาน";
-        document.getElementById('admin-action-user').value = users[index].user;
-        document.getElementById('admin-action-pass').value = users[index].pass;
-        document.getElementById('admin-action-email').value = users[index].email || "";
-        icon.className = "w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-blue-600 text-white text-xl font-bold shadow-inner";
-        icon.innerHTML = `<i data-lucide="edit"></i>`;
-      } else { // โหมดเพิ่มใหม่
-        document.getElementById('admin-action-title').innerText = "เพิ่มผู้ใช้งานใหม่";
-        document.getElementById('admin-action-user').value = "";
-        document.getElementById('admin-action-pass').value = "";
-        document.getElementById('admin-action-email').value = "";
-        icon.className = "w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-green-600 text-white text-xl font-bold shadow-inner";
-        icon.innerHTML = `<i data-lucide="user-plus"></i>`;
-      }
-      lucide.createIcons();
-    }
-
-    function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
-
-    document.getElementById('admin-action-submit').onclick = () => {
-      const user = document.getElementById('admin-action-user').value.trim();
-      const pass = document.getElementById('admin-action-pass').value.trim();
-      const email = document.getElementById('admin-action-email').value.trim();
-      const thaiRegex = /[\u0E00-\u0E7F]/;
-
-      if (!user || !pass) { showToast("กรุณากรอกข้อมูลให้ครบถ้วน", "error"); return; }
-      if (thaiRegex.test(user) || thaiRegex.test(pass)) { showToast("ห้ามใช้ภาษาไทยในชื่อหรือรหัสผ่าน", "error"); return; }
-      if (pass.length < 8) { showToast("รหัสผ่านต้องมี 8 ตัวอักษรขึ้นไป", "error"); return; }
-
-      let users = JSON.parse(localStorage.getItem('ink_user_database'));
-      if (currentAdminUserTask !== null) { // บันทึกการแก้ไข
-        users[currentAdminUserTask] = { ...users[currentAdminUserTask], user, pass, email };
-        showToast("แก้ไขข้อมูลสำเร็จ", "success");
-      } else { // เพิ่มใหม่
-        if (users.some(x => x.user === user)) { showToast("ชื่อผู้ใช้งานนี้มีอยู่แล้ว", "error"); return; }
-        users.push({ user, pass, email, role: 'user' });
-        showToast("เพิ่มผู้ใช้งานใหม่สำเร็จ", "success");
-      }
-      localStorage.setItem('ink_user_database', JSON.stringify(users));
-      closeAdminActionModal(); loadUserManagement();
-    };
-
-    function deleteUserAccount(index) {
-      const users = JSON.parse(localStorage.getItem('ink_user_database'));
-      if (users[index].user === 'admin') { showToast("ไม่สามารถลบบัญชีหลักได้", "error"); return; }
-      document.getElementById('admin-delete-sub').innerText = `ยืนยันการลบบัญชีคุณ [ ${users[index].user} ]`;
-      const m = document.getElementById('admin-delete-modal');
-      m.classList.add('modal-show');
-      document.getElementById('admin-delete-confirm').onclick = () => {
-        users.splice(index, 1);
-        localStorage.setItem('ink_user_database', JSON.stringify(users));
-        m.classList.remove('modal-show');
-        showToast("ลบบัญชีสำเร็จ", "success"); loadUserManagement();
-      };
-    }
-
-    // ฟังก์ชันจัดการ UI เดิม (ห้ามเปลี่ยน)
     function handleLogin() {
       const u = document.getElementById('login-user').value.trim();
       const p = document.getElementById('login-pass').value.trim();
@@ -373,7 +183,7 @@
       if (found) {
         localStorage.setItem('ink_logged_in', 'true');
         localStorage.setItem('ink_user_role', found.role || 'user');
-        loadCachedLayout();
+        renderFromCache();
         document.getElementById('login-view').classList.add('hidden');
         document.getElementById('main-view').classList.remove('hidden');
         if (found.role === 'admin') document.getElementById('nav-users').classList.remove('hidden');
@@ -384,25 +194,14 @@
       }
     }
 
-    function toggleAuthForm(showReg) { // แก้ไข: ลบการสลับไป Reg หน้าแรก เพราะถูกสั่งออกแล้ว
-      if (showReg) { showToast("กรุณาติดต่อผู้ดูแลระบบเพื่อเพิ่มบัญชีใหม่", "error"); }
-    }
-
-    function openGoogleAuthModal() { document.getElementById('google-auth-modal').classList.add('modal-show'); }
-    function closeGoogleAuthModal() { document.getElementById('google-auth-modal').classList.remove('modal-show'); }
-    function selectGoogleAccount(email, user) {
-      let users = JSON.parse(localStorage.getItem('ink_user_database'));
-      if (!users.some(x => x.user === user)) { users.push({ user, pass: 'google_auth', email, role: 'user' }); localStorage.setItem('ink_user_database', JSON.stringify(users)); }
-      localStorage.setItem('ink_logged_in', 'true'); localStorage.setItem('ink_user_role', 'user');
-      location.reload();
-    }
+    function handleLogout() { localStorage.removeItem('ink_logged_in'); location.reload(); }
 
     async function init() {
       try {
         const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`);
         inventory = await resp.json();
         localStorage.setItem('ink_inventory_cache', JSON.stringify(inventory));
-        renderCards(currentMachine === 'all' ? null : currentMachine);
+        renderCards(currentMachine==='all'?null:currentMachine);
         renderMachines();
         document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
         lucide.createIcons();
@@ -414,20 +213,20 @@
       const data = machine ? inventory.filter(i => i.machine === machine) : inventory;
       const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
       grid.innerHTML = data.map(item => `
-        <div class="card bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-md transition-all relative flex flex-col justify-between min-w-0 min-h-[240px] z-0">
+        <div class="card bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-100 relative flex flex-col justify-between min-h-[240px]">
           ${item.qty <= 5 ? '<div class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-2.5 py-1 rounded-full animate-bounce shadow-md z-10">🚨 LOW STOCK</div>' : ''}
           <div class="w-full">
             <div class="flex justify-between items-start gap-2 mb-4">
-              <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-xl shadow-inner shrink-0 border border-slate-100" style="background-color:${item.hex}"></div>
-              ${isAdmin ? `<button onclick="openAdminStockModal('${item.id}', ${item.qty}, '${item.hex}')" class="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-[#0a2384] rounded-xl transition-all"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>` : ''}</div>
-              <span class="text-sm font-bold px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg uppercase truncate max-w-[150px] text-right">${item.machine}</span>
+              <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-xl shadow-inner shrink-0" style="background-color:${item.hex}"></div>
+              ${isAdmin ? `<button onclick="openAdminStockModal('${item.id}', ${item.qty}, '${item.hex}')" class="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-400 rounded-xl transition-all"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>` : ''}</div>
+              <span class="text-sm font-bold px-2.5 py-1 bg-slate-100 text-slate-500 rounded-lg uppercase truncate">${item.machine}</span>
             </div>
-            <h3 class="font-extrabold text-slate-800 text-lg leading-tight mb-1 truncate">${item.type}</h3><p class="text-[11px] text-slate-400 uppercase tracking-wider break-all line-clamp-1 mb-4">${item.id}</p>
+            <h3 class="font-extrabold text-slate-800 text-lg leading-tight mb-1 truncate">${item.type}</h3><p class="text-[11px] text-slate-400 break-all mb-4">${item.id}</p>
           </div>
           <div class="w-full">
-            <div class="flex justify-between items-center mb-2 text-xs font-semibold text-slate-500"><span>คงเหลือ</span><span class="text-sm font-bold text-slate-700">${item.qty}</span></div>
+            <div class="flex justify-between mb-2 text-xs font-semibold"><span>คงเหลือ</span><span>${item.qty}</span></div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-5"><div class="h-full rounded-full transition-all duration-1000" style="width:${Math.min((item.qty/25)*100, 100)}%; background-color:${item.hex}"></div></div>
-            <div class="grid grid-cols-2 gap-2.5"><button onclick="openModal('${item.id}', 'IN', '${item.hex}', ${item.qty})" class="py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold hover:bg-green-700 shadow-md">รับเข้า</button><button onclick="openModal('${item.id}', 'OUT', '${item.hex}', ${item.qty})" class="py-2.5 bg-[#0a2384] text-white rounded-xl text-xs font-bold hover:bg-blue-900 shadow-md">เบิกออก</button></div>
+            <div class="grid grid-cols-2 gap-2.5"><button onclick="openModal('${item.id}', 'IN', '${item.hex}', ${item.qty})" class="py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold">รับเข้า</button><button onclick="openModal('${item.id}', 'OUT', '${item.hex}', ${item.qty})" class="py-2.5 bg-[#0a2384] text-white rounded-xl text-xs font-bold">เบิกออก</button></div>
           </div>
         </div>`).join('');
       lucide.createIcons();
@@ -435,7 +234,7 @@
 
     function openModal(id, type, hex, currentQty) {
       currentModalTask = { id, type, currentQty }; document.getElementById('modal').classList.add('modal-show');
-      document.getElementById('modal-title').innerText = type === 'IN' ? 'รับเข้าคลังสินค้า' : 'ดำเนินการเบิกออก';
+      document.getElementById('modal-title').innerText = type === 'IN' ? 'รับเข้าสินค้า' : 'ดำเนินการเบิกออก';
       document.getElementById('modal-sub').innerText = id; document.getElementById('modal-color').style.backgroundColor = hex;
       document.getElementById('modal-qty').value = '';
       const rCont = document.getElementById('modal-remark-container');
@@ -443,40 +242,97 @@
       document.getElementById('modal-qty').focus();
     }
 
+    document.getElementById('modal-submit').onclick = async () => {
+      const val = parseFloat(document.getElementById('modal-qty').value);
+      const remark = document.getElementById('modal-remark').value;
+      if (val > 0) {
+        const { id, type, currentQty } = currentModalTask;
+        if (type === 'OUT' && val > currentQty) { showToast(`สินค้ามีไม่พอ! เหลือเพียง ${currentQty} ชิ้น`, 'error'); return; }
+        closeModal(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+        const newQty = (type === 'IN') ? currentQty + val : currentQty - val;
+        const idx = inventory.findIndex(i => i.id === id);
+        if (idx !== -1) { inventory[idx].qty = newQty; renderCards(currentMachine==='all'?null:currentMachine); localStorage.setItem('ink_inventory_cache', JSON.stringify(inventory)); }
+        showToast(`บันทึกสำเร็จ ยอดใหม่คือ ${newQty}`, 'success');
+        try {
+          let url = `${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${val}&type=${type}`;
+          if (type === 'OUT') url += `&remark=${encodeURIComponent(remark)}`;
+          fetch(url).then(() => { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500"; init(); loadNotificationHistory(); });
+        } catch (e) {}
+      }
+    };
+
+    function openAdminUserActionModal(index = null) {
+      const users = JSON.parse(localStorage.getItem('ink_user_database'));
+      currentAdminUserTask = index; 
+      const m = document.getElementById('admin-action-modal'); m.classList.add('modal-show');
+      m.querySelector('.scale-95').classList.remove('scale-95');
+      const icon = document.getElementById('admin-action-icon');
+      if (index !== null) {
+        document.getElementById('admin-action-title').innerText = "แก้ไขผู้ใช้งาน";
+        document.getElementById('admin-action-user').value = users[index].user;
+        document.getElementById('admin-action-pass').value = users[index].pass;
+        icon.className = "w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-blue-600 text-white shadow-inner";
+        icon.innerHTML = `<i data-lucide="edit"></i>`;
+      } else {
+        document.getElementById('admin-action-title').innerText = "เพิ่มผู้ใช้งานใหม่";
+        document.getElementById('admin-action-user').value = "";
+        document.getElementById('admin-action-pass').value = "";
+        icon.className = "w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-green-600 text-white shadow-inner";
+        icon.innerHTML = `<i data-lucide="user-plus"></i>`;
+      }
+      lucide.createIcons();
+    }
+
+    document.getElementById('admin-action-submit').onclick = () => {
+      const user = document.getElementById('admin-action-user').value.trim();
+      const pass = document.getElementById('admin-action-pass').value.trim();
+      if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง หรือรหัสผ่านสั้นเกินไป", "error"); return; }
+      let users = JSON.parse(localStorage.getItem('ink_user_database'));
+      if (currentAdminUserTask !== null) { users[currentAdminUserTask] = { user, pass, role: 'user' }; } 
+      else { if(users.some(x=>x.user===user)){ showToast("มีชื่อนี้แล้ว","error"); return; } users.push({ user, pass, role: 'user' }); }
+      localStorage.setItem('ink_user_database', JSON.stringify(users));
+      document.getElementById('admin-action-modal').classList.remove('modal-show'); loadUserManagement();
+    };
+
     function loadUserManagement() {
       const users = JSON.parse(localStorage.getItem('ink_user_database'));
       document.getElementById('user-management-grid').innerHTML = users.map((u, i) => `
-        <div class="bg-slate-50 p-5 rounded-3xl border border-slate-200 flex flex-col justify-between hover:shadow-md transition-all">
-          <div><div class="flex justify-between items-center mb-3 gap-2"><h4 class="font-bold text-slate-800 text-base flex items-center gap-2 truncate"><i data-lucide="user" class="w-4 h-4 text-[#001b6e]"></i> ${u.user}</h4><span class="px-2.5 py-1 text-[9px] font-bold rounded-lg uppercase ${u.role==='admin'?'bg-orange-100 text-orange-600':'bg-blue-50 text-blue-600'}">${u.role}</span></div>
-          <p class="text-xs text-slate-400 truncate mb-5"><i data-lucide="mail" class="w-3.5 h-3.5 inline mr-1"></i>${u.email||'-'}</p></div>
-          <div class="flex items-center justify-end gap-2 border-t pt-3"><button onclick="openAdminUserActionModal(${i})" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition"><i data-lucide="key" class="w-3 h-3 inline mr-1"></i>แก้ไข</button>
-          ${u.user !== 'admin' ? `<button onclick="deleteUserAccount(${i})" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition"><i data-lucide="trash-2" class="w-3 h-3 inline mr-1"></i>ลบ</button>` : ''}</div>
+        <div class="bg-slate-50 p-5 rounded-3xl border border-slate-200 flex flex-col justify-between">
+          <h4 class="font-bold text-slate-800 truncate mb-1"><i data-lucide="user" class="w-4 h-4 inline mr-2"></i>${u.user}</h4>
+          <span class="text-[9px] font-bold text-slate-400 uppercase">${u.role}</span>
+          <div class="flex items-center justify-end gap-2 border-t pt-3 mt-5">
+            <button onclick="openAdminUserActionModal(${i})" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold">แก้ไข</button>
+            ${u.user !== 'admin' ? `<button onclick="deleteUserAccount(${i})" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold">ลบ</button>` : ''}
+          </div>
         </div>`).join('');
       lucide.createIcons();
     }
 
-    // ฟังก์ชันจัดการกราฟและอื่นๆ (คงเดิม)
-    async function loadChart() {
-      const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`);
-      const logs = await resp.json();
-      const tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value;
-      const grouped = {}; let labels = [];
-      if (tf === 'day') for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i); const k = d.toLocaleDateString(); labels.push(k); grouped[k] = {IN:0, OUT:0}; }
-      logs.slice(1).forEach(l => { const d = new Date(l[0]); let k = d.toLocaleDateString(); if (tf==='month') k=`${d.getMonth()+1}/${d.getFullYear()}`; if (tf==='year') k=d.getFullYear(); if (tf!=='day' && !grouped[k]) grouped[k]={IN:0, OUT:0}; if (grouped[k]) grouped[k][l[2]] += l[3]; });
-      if (tf !== 'day') labels = Object.keys(grouped).slice(-10);
-      const ds = []; if (filter !== 'OUT') ds.push({ label:'รับเข้า', data:labels.map(l=>grouped[l].IN), borderColor:'#22c55e', backgroundColor: cType==='bar'?'#22c55e':'rgba(34,197,94,0.1)', fill:true });
-      if (filter !== 'IN') ds.push({ label:'เบิกออก', data:labels.map(l=>grouped[l].OUT), borderColor:'#102a96', backgroundColor: cType==='bar'?'#102a96':'rgba(16,42,150,0.1)', fill:true });
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels, datasets: ds }, options: { responsive:true, maintainAspectRatio:false }});
+    function deleteUserAccount(i) {
+      let users = JSON.parse(localStorage.getItem('ink_user_database'));
+      if (confirm(`ลบบัญชี ${users[i].user}?`)) { users.splice(i, 1); localStorage.setItem('ink_user_database', JSON.stringify(users)); loadUserManagement(); }
     }
 
-    function showToast(m, t) { const c = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-500 w-full`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-[18px] font-semibold tracking-wide uppercase">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
+    function showToast(m, t) {
+      const c = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-500 w-full`;
+      toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-[18px] font-semibold tracking-wide uppercase">${m}</span>`;
+      c.appendChild(toast); lucide.createIcons();
+      setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10);
+      setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000);
+    }
+
+    function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
+    async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-2 text-slate-400">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 5); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => `<div class="border-b pb-2"><div class="flex justify-between font-medium"><span>${l[2]==='IN'?'🟢':'🔵'} ${l[3]} ชิ้น</span><span class="text-slate-400 text-[10px]">${new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="text-[10px] text-slate-400 truncate">${l[1]}</div></div>`).join(''); } catch(e){} }
+    function openGoogleAuthModal() { document.getElementById('google-auth-modal').classList.add('modal-show'); }
+    function closeGoogleAuthModal() { document.getElementById('google-auth-modal').classList.remove('modal-show'); }
+    function selectGoogleAccount(email, user) { let users = JSON.parse(localStorage.getItem('ink_user_database')); if (!users.some(x => x.user === user)) { users.push({ user, pass: 'google_auth', role: 'admin' }); localStorage.setItem('ink_user_database', JSON.stringify(users)); } localStorage.setItem('ink_logged_in', 'true'); localStorage.setItem('ink_user_role', 'admin'); location.reload(); }
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
     function changeView(v, p=null) { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('sidebar-active')); document.getElementById('inventory-view').classList.add('hidden'); document.getElementById('summary-view').classList.add('hidden'); document.getElementById('users-view').classList.add('hidden'); if (v==='all') { currentMachine='all'; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById('nav-all').classList.add('sidebar-active'); renderCards(); document.getElementById('page-title').innerText="All Items"; } else if (v==='summary') { document.getElementById('summary-view').classList.remove('hidden'); document.getElementById('nav-summary').classList.add('sidebar-active'); loadChart(); document.getElementById('page-title').innerText="Summary"; } else if (v==='users') { document.getElementById('users-view').classList.remove('hidden'); document.getElementById('nav-users').classList.add('sidebar-active'); loadUserManagement(); document.getElementById('page-title').innerText="Users Management"; } else { currentMachine=p; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById(`nav-${p.replace(/\s/g,'')}`).classList.add('sidebar-active'); renderCards(p); document.getElementById('page-title').innerText=p; } }
     function renderMachines() { const list = [...new Set(inventory.map(i => i.machine))]; document.getElementById('machine-menu').innerHTML = list.map(m => `<button onclick="changeView('machine', '${m}')" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-6 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left"><i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}" class="w-4 h-4 text-blue-300"></i><span class="truncate">${m}</span></button>`).join(''); lucide.createIcons(); }
     function filter() { const q = document.getElementById('search').value.toLowerCase(); document.querySelectorAll('.card').forEach(c => c.style.display = c.innerText.toLowerCase().includes(q) ? '' : 'none'); }
-    function handleLogout() { localStorage.removeItem('ink_logged_in'); location.reload(); }
-    async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-2 text-slate-400">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 5); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => `<div class="border-b pb-2"><div class="flex justify-between font-medium"><span>${l[2]==='IN'?'🟢 รับเข้า':'🔵 เบิกออก'} ${l[3]} ชิ้น</span><span class="text-slate-400 text-[10px]">${new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="text-[10px] text-slate-400 truncate">${l[1]}</div>${l[5]?`<div class="text-[10px] bg-slate-50 p-1 rounded mt-1 truncate">📝 ${l[5]}</div>`:''}</div>`).join(''); } catch(e){} }
+    async function loadChart() { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const cType = 'line'; const grouped = {}; let labels = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i); const k = d.toLocaleDateString(); labels.push(k); grouped[k] = {IN:0, OUT:0}; } logs.slice(1).forEach(l => { const d = new Date(l[0]); let k = d.toLocaleDateString(); if (grouped[k]) grouped[k][l[2]] += l[3]; }); if (chartInstance) chartInstance.destroy(); chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels, datasets: [{ label:'รับเข้า', data:labels.map(l=>grouped[l].IN), borderColor:'#22c55e', fill:true }, { label:'เบิกออก', data:labels.map(l=>grouped[l].OUT), borderColor:'#102a96', fill:true }] }, options: { responsive:true, maintainAspectRatio:false }}); }
     function openAdminStockModal(id, qty, hex) { currentAdminStockTask={id,qty}; document.getElementById('admin-stock-modal').classList.add('modal-show'); document.getElementById('admin-stock-sub').innerText=id; document.getElementById('admin-stock-color').style.backgroundColor=hex; document.getElementById('admin-stock-qty').value=qty; }
     function closeAdminStockModal() { document.getElementById('admin-stock-modal').classList.remove('modal-show'); }
     document.getElementById('admin-stock-submit').onclick = async () => { const tQty = parseFloat(document.getElementById('admin-stock-qty').value); if(isNaN(tQty)||tQty<0) return; const {id,qty} = currentAdminStockTask; if(tQty===qty){ closeAdminStockModal(); return; } closeAdminStockModal(); document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-orange-500 animate-spin"; const diff = Math.abs(tQty-qty), type = tQty>qty?'IN':'OUT'; const idx = inventory.findIndex(i=>i.id===id); if(idx!==-1){ inventory[idx].qty=tQty; renderCards(currentMachine==='all'?null:currentMachine); localStorage.setItem('ink_inventory_cache', JSON.stringify(inventory)); } showToast(`ปรับปรุงยอดสำเร็จ ยอดใหม่คือ ${tQty}`, 'success'); try { fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${diff}&type=${type}&remark=AdminEdit`).then(()=>{ document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-green-500"; init(); loadNotificationHistory(); }); } catch(e){} };
