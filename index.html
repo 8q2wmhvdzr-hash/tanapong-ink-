@@ -75,7 +75,7 @@
         <h2 id="page-title" class="text-lg md:text-xl font-bold uppercase truncate font-bold">All Items</h2>
         <div class="flex items-center gap-3 relative ml-auto font-bold">
           <div class="static md:relative inline-block">
-            <button id="bell-btn" onclick="toggleNotification()" class="relative p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full outline-none font-bold"><i data-lucide="bell" class="w-5 h-5"></i><span id="bell-badge" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span></button>
+            <button id="bell-btn" onclick="toggleNotification()" class="relative p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full outline-none font-bold"><i data-lucide="bell" class="w-5 h-5 font-bold"></i><span id="bell-badge" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span></button>
             <div id="notification-panel" class="fixed md:absolute top-16 md:top-auto right-4 left-4 md:right-0 md:left-auto md:mt-3 md:w-96 bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-5 hidden z-[100] max-h-[70vh] overflow-y-auto">
               <h4 class="font-bold text-sm text-slate-800 mb-3 border-b pb-2 font-bold">ประวัติการดำเนินการ</h4>
               <div id="notification-list" class="space-y-3 text-xs"></div>
@@ -125,7 +125,10 @@
       <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase break-all font-bold tracking-widest"></p>
       <div class="mb-4 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">ระบุจำนวนสินค้า</label><input type="number" id="modal-qty" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all font-bold"></div>
       <div id="modal-remark-container" class="mb-8 text-left hidden"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">หมายเหตุ</label><input type="text" id="modal-remark" placeholder="..." class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-semibold font-bold"></div>
-      <div class="flex gap-4 font-bold"><button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="modal-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">ตกลง</button></div>
+      <div class="flex gap-4 font-bold">
+        <button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button>
+        <button id="modal-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">ตกลง</button>
+      </div>
     </div>
   </div>
 
@@ -135,7 +138,7 @@
       <h3 id="admin-action-title" class="text-2xl font-bold mb-8 text-slate-800 font-bold"></h3>
       <div class="space-y-4 mb-8 text-left">
         <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Username</label><input type="text" id="admin-action-user" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div>
-        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password</label><input type="password" id="admin-action-pass" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div>
+        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label><input type="password" id="admin-action-pass" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div>
       </div>
       <div class="flex gap-4"><button onclick="closeAdminActionModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="admin-action-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div>
     </div>
@@ -144,31 +147,37 @@
   <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1700] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300">
       <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner font-bold"><i data-lucide="trash-2"></i></div>
-      <h3 class="text-2xl font-bold mb-2 text-slate-800">ยืนยันการลบ?</h3>
+      <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">ยืนยันการลบ?</h3>
       <p id="confirm-msg" class="text-sm text-slate-400 mb-8 font-medium px-4"></p>
-      <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl shadow-xl transition-all">ลบทิ้ง</button></div>
+      <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 shadow-xl transition-all">ลบทิ้ง</button></div>
     </div>
   </div>
+
+  <div id="admin-stock-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1800] p-4 text-center">
+    <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300">
+      <div id="admin-stock-color" class="w-16 h-16 rounded-2xl mx-auto mb-4 shadow-inner border"></div>
+      <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">แก้ไขยอดสต็อก</h3>
+      <p id="admin-stock-sub" class="text-[10px] text-slate-400 mb-8 uppercase break-all font-bold"></p>
+      <div class="mb-8 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label><input type="number" id="admin-stock-qty" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all"></div>
+      <div class="flex gap-4"><button onclick="closeAdminStockModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl">ยกเลิก</button><button id="admin-stock-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwIztnBap4TR6fXBWgq3HPEo5QMEG_3kz7ijXkD-7VzvIF8Bd31Ry9WD655GR5Kgk6L/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
 
-    function updateLoadingBar(percent, show = true) {
-      const bar = document.getElementById('top-loading-bar');
-      bar.style.opacity = show ? '1' : '0'; bar.style.width = percent + '%';
-      if (percent >= 100) setTimeout(() => bar.style.opacity = '0', 400);
-    }
-
-    // จุดแก้ไขเด็ดขาด: ดึงข้อมูล Cache เขียนโครงร่างทันที 0 วินาที ป้องกันหน้าจอสีขาวโล่งแวบตอนรีเฟรชหน้าจอ
+    // การเปิดโชว์ข้อมูลและโครงร่างเดิมจากคลัง Cache ทันทีใน 0 วินาที ป้องกันหน้าจอสีขาวว่างเปล่าตอนรีเฟรชหน้าจอ
     window.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
       const isLogged = localStorage.getItem('ink_logged_in') === 'true';
       const savedUser = localStorage.getItem('ink_current_user');
       const savedPass = localStorage.getItem('ink_current_pass');
       const savedRole = localStorage.getItem('ink_user_role');
 
       if (isLogged && savedUser && savedPass) {
-        // บังคับเปิดโชว์หน้าจอเดิมและเรนเดอร์ข้อมูลเดิมจาก Cache ทันทีโดยไม่ต้องรอเครือข่าย!
         document.getElementById('main-view').classList.add('active');
         if (savedRole === 'admin') document.getElementById('nav-users').classList.remove('hidden');
         renderFromCache();
@@ -187,7 +196,6 @@
         setupLoginLayout();
         await fetchUsers();
       }
-      lucide.createIcons();
     });
 
     async function fetchUsers() { 
@@ -201,7 +209,7 @@
       if (role === 'admin') document.getElementById('nav-users').classList.remove('hidden');
       renderFromCache(); init(); loadNotificationHistory();
 
-      // Background Auto-Sync ซิงค์ข้อมูลเงียบๆ ในพื้นหลังทุกๆ 5 วินาที หน้าจอจะไม่กระพริบ
+      // Background Auto-Sync รันในพื้นหลังทุกๆ 5 วินาที
       setInterval(async () => {
         await fetchUsers(); 
         try {
@@ -266,7 +274,7 @@
             <div class="flex justify-between items-start mb-4">
               <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-xl border shrink-0 shadow-inner" style="background-color:${item.hex}"></div>
               ${isAdmin ? `<button onclick="openAdminStockModal('${item.id}', ${item.qty}, '${item.hex}')" class="p-1 bg-slate-50 text-slate-300 rounded-lg hover:text-blue-900 transition-all"><i data-lucide="edit-3" class="w-3 h-3"></i></button>` : ''}</div>
-              <span class="text-[10px] font-extrabold px-3 py-1 bg-slate-50 text-slate-500 rounded-lg uppercase truncate">${item.machine}</span>
+              <span class="text-[10px] font-extrabold px-3 py-1 bg-slate-100 text-slate-500 rounded-lg uppercase truncate">${item.machine}</span>
             </div>
             <h3 class="font-extrabold text-slate-800 text-lg leading-tight mb-1 truncate font-bold">${item.type}</h3><p class="text-[11px] text-slate-400 break-all mb-4 uppercase font-medium tracking-tight font-bold">${item.id}</p>
           </div>
@@ -280,31 +288,38 @@
 
     function loadUserManagement() {
       document.getElementById('user-management-grid').innerHTML = usersDB.map((u, i) => `
-        <div class="bg-slate-50 p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between hover:shadow-md transition-all">
-          <div class="flex justify-between items-start mb-4"><div class="p-3 bg-white rounded-2xl shadow-sm"><i data-lucide="user" class="w-5 h-5 text-blue-900"></i></div><span class="px-3 py-1 bg-blue-100 text-[#001b6e] text-[9px] font-extrabold rounded-full uppercase italic">${u[2]}</span></div>
-          <h4 class="font-bold text-slate-800 text-lg truncate mb-5">${u[0]}</h4>
-          <div class="flex items-center justify-end gap-2 border-t pt-4"><button onclick="openAdminUserActionModal(${i})" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase">แก้ไข</button>${u[0]!=='admin' ? `<button onclick="askDelete('${u[0]}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase">ลบ</button>`:''}</div>
-        </div>`).join('');
+        <div class="bg-white p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between shadow-sm hover:shadow-md transition-all"><div class="flex justify-between items-start mb-4"><div class="p-3 bg-slate-50 rounded-2xl"><i data-lucide="user" class="w-5 h-5 text-[#001b6e]"></i></div><span class="px-3 py-1 bg-blue-100 text-[#001b6e] text-[9px] font-extrabold rounded-full uppercase italic">${u[2]}</span></div><h4 class="font-bold text-slate-800 text-lg truncate mb-5">${u[0]}</h4><div class="flex items-center justify-end gap-2 border-t pt-4"><button onclick="openAdminUserActionModal(${i})" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase">แก้ไข</button>${u[0]!=='admin' ? `<button onclick="askDelete('${u[0]}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase">ลบ</button>`:''}</div></div>`).join('');
       lucide.createIcons();
     }
 
     async function manageUserDB(mode, user, pass, old) { await fetch(`${API_URL}?action=manageUser&mode=${mode}&user=${user}&pass=${pass}&oldUser=${old}`); await fetchUsers(); loadUserManagement(); showToast("บันทึกเรียบร้อย", "success"); }
     document.getElementById('admin-action-submit').onclick = async () => { const user = document.getElementById('admin-action-user').value.trim(), pass = document.getElementById('admin-action-pass').value.trim(); const mode = currentAdminUserTask !== null ? 'edit' : 'add', old = currentAdminUserTask !== null ? usersDB[currentAdminUserTask][0] : ''; if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง!", "error"); return; } closeAdminActionModal(); showToast("กำลังบันทึก...", "success"); await manageUserDB(mode, user, pass, old); };
 
-    function openModal(id, type, hex, qty) { currentModalTask={id,type,currentQty:qty}; document.getElementById('modal').classList.add('modal-show'); document.getElementById('modal-title').innerText=type==='IN'?'รับเข้าสินค้า':'เบิกสินค้าออก'; document.getElementById('modal-sub').innerText=id; document.getElementById('modal-color').style.backgroundColor=hex; document.getElementById('modal-qty').value=''; const rCont=document.getElementById('modal-remark-container'); if(type==='OUT'){ rCont.classList.remove('hidden'); document.getElementById('modal-remark').value=''; } else { rCont.classList.add('hidden'); } document.getElementById('modal-qty').focus(); }
-    function openAdminUserActionModal(i=null) { currentAdminUserTask=i; document.getElementById('admin-action-modal').classList.add('modal-show'); if(i!==null){ document.getElementById('admin-action-title').innerText="แก้ไขพนักงาน"; document.getElementById('admin-action-user').value=usersDB[i][0]; document.getElementById('admin-action-pass').value=usersDB[i][1]; document.getElementById('admin-action-icon').className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white shadow-inner"; document.getElementById('admin-action-icon').innerHTML=`<i data-lucide="edit"></i>`; } else { document.getElementById('admin-action-title').innerText="เพิ่มพนักงานใหม่"; document.getElementById('admin-action-user').value=""; document.getElementById('admin-action-pass').value=""; document.getElementById('admin-action-icon').className="w-16 h-16 bg-green-600 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white shadow-inner"; document.getElementById('admin-action-icon').innerHTML=`<i data-lucide="user-plus"></i>`; } lucide.createIcons(); }
-    function openAdminStockModal(id, qty, hex) { currentModalTask={id, type:'EDIT', currentQty:qty}; document.getElementById('modal').classList.add('modal-show'); document.getElementById('modal-title').innerText = 'แก้ไขยอดสต็อก'; document.getElementById('modal-sub').innerText = id; document.getElementById('modal-color').style.backgroundColor = hex; document.getElementById('modal-qty').value = qty; document.getElementById('modal-remark-container').classList.add('hidden'); }
-    function askDelete(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); await fetchUsers(); loadUserManagement(); closeConfirm(); showToast("ลบแล้ว","success"); }; }
-    function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
-    function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
-    function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
-    function showToast(m, t) { const c = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-500 w-full font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-[18px] uppercase font-bold">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
+    function openAdminStockModal(id, qty, hex) { currentAdminStockTask={id,qty}; document.getElementById('modal').classList.add('modal-show'); document.getElementById('modal-title').innerText = 'แก้ไขยอดสต็อก'; document.getElementById('modal-sub').innerText = id; document.getElementById('modal-color').style.backgroundColor = hex; document.getElementById('modal-qty').value = qty; document.getElementById('modal-remark-container').classList.add('hidden'); }
+    function closeAdminStockModal() { document.getElementById('modal').classList.remove('modal-show'); }
+    document.getElementById('admin-stock-submit').onclick = async () => {
+      const tQty = parseFloat(document.getElementById('admin-stock-qty').value); if(isNaN(tQty)||tQty<0) return;
+      const {id,qty} = currentAdminStockTask; if(tQty===qty){ closeModal(); return; }
+      closeModal(); document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-orange-500 animate-spin";
+      const diff = Math.abs(tQty-qty), type = tQty>qty?'IN':'OUT';
+      const idx = inventory.findIndex(i=>i.id===id); if(idx!==-1){ inventory[idx].qty=tQty; renderCards(currentMachine==='all'?null:currentMachine); localStorage.setItem('ink_inventory_cache', JSON.stringify(inventory)); }
+      showToast(`ปรับปรุงยอดสำเร็จ ยอดใหม่คือ ${tQty}`, 'success');
+      try { fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${diff}&type=${type}&remark=AdminEdit`).then(()=>{ document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-green-500"; init(); loadNotificationHistory(); }); } catch(e){}
+    };
+
     function renderMachines() { const list = [...new Set(inventory.map(i => i.machine))]; document.getElementById('machine-menu').innerHTML = list.map(m => `<button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-6 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold"><i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span></button>`).join(''); lucide.createIcons(); }
     function renderFromCache() { const cached = localStorage.getItem('ink_inventory_cache'); if (cached) { inventory = JSON.parse(cached); renderCards(currentMachine==='all'?null:currentMachine); renderMachines(); } }
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if (s) { sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden'); } else { sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden'); } }
+    function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
+    function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
+    function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
+    function askDelete(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); await fetchUsers(); loadUserManagement(); closeConfirm(); showToast("ลบแล้ว","success"); }; }
+    function showToast(m, t) { const c = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-500 w-full font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-[18px] uppercase font-bold">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
+    function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     function changeView(v, p=null) { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('sidebar-active')); document.getElementById('inventory-view').classList.add('hidden'); document.getElementById('summary-view').classList.add('hidden'); document.getElementById('users-view').classList.add('hidden'); if (v==='all') { currentMachine='all'; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById('nav-all').classList.add('sidebar-active'); renderCards(); document.getElementById('page-title').innerText="All Items"; } else if (v==='summary') { document.getElementById('summary-view').classList.remove('hidden'); document.getElementById('nav-summary').classList.add('sidebar-active'); loadChart(); document.getElementById('page-title').innerText="Summary Report"; } else if (v==='users') { document.getElementById('users-view').classList.remove('hidden'); document.getElementById('nav-users').classList.add('sidebar-active'); loadUserManagement(); document.getElementById('page-title').innerText="User Management"; } else { currentMachine=p; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById(`nav-${p.replace(/\s/g,'')}`).classList.add('sidebar-active'); renderCards(p); document.getElementById('page-title').innerText=p; } }
     async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-2 text-slate-400 font-bold">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 8); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => `<div class="border-b pb-2 last:border-none border-slate-50 font-bold"><div class="flex justify-between font-bold text-slate-700"><span>${l[2]==='IN'?'🟢':'🔵'} ${l[3]} ชิ้น</span><span class="text-slate-400 text-[9px] font-bold">${new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="text-[9px] text-slate-400 truncate font-bold">${l[1]}</div></div>`).join(''); } catch(e){} }
     async function loadChart() { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = (await resp.json()).slice(1), tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value; const dates = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); } const inkTypes = [...new Set(inventory.map(i => i.type))]; const datasets = inkTypes.map(ink => { const itemInfo = inventory.find(inv => inv.type === ink); return { label: ink, data: dates.map(d => logs.filter(l => new Date(l[0]).toLocaleDateString() === d && inventory.find(inv => inv.id === l[1])?.type === ink).reduce((sum, curr) => sum + (filter === 'both' ? curr[3] : (curr[2] === filter ? curr[3] : 0)), 0)), borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true }; }).filter(ds => ds.data.some(v => v > 0)); if (chartInstance) chartInstance.destroy(); chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); }
+    document.addEventListener('click', (e) => { const panel = document.getElementById('notification-panel'); const btn = document.getElementById('bell-btn'); if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.add('hidden'); });
   </script>
 </body>
 </html>
