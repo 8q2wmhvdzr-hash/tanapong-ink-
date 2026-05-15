@@ -15,7 +15,6 @@
     .sidebar-mobile-hide { transform: translateX(-100%); }
     .sidebar-mobile-show { transform: translateX(0); }
     
-    /* สไตล์สำหรับ Loading Bar ด้านบนสุด */
     #top-loading-bar {
       position: fixed; top: 0; left: 0; height: 3px;
       background: linear-gradient(to right, #0ea5e9, #001b6e);
@@ -170,7 +169,77 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwIztnBap4TR6fXBWgq3HPEo5QMEG_3kz7ijXkD-7VzvIF8Bd31Ry9WD655GR5Kgk6L/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
 
-    // การเปิดโชว์ข้อมูลและโครงร่างเดิมจากคลัง Cache ทันทีใน 0 วินาที ป้องกันหน้าจอสีขาวว่างเปล่าตอนรีเฟรชหน้าจอ
+    // --- ฟังก์ชันที่เพิ่มเข้ามาให้ครบ ---
+    function updateLoadingBar(percent, show = true) {
+      const bar = document.getElementById('top-loading-bar');
+      if (!bar) return;
+      bar.style.width = percent + '%';
+      bar.style.opacity = show ? '1' : '0';
+      if (percent >= 100) {
+        setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => { bar.style.width = '0%'; }, 300); }, 500);
+      }
+    }
+
+    function filter() {
+      const term = document.getElementById('search').value.toLowerCase();
+      document.querySelectorAll('#inventory-view .card').forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(term) ? 'flex' : 'none';
+      });
+    }
+
+    function exportExcel() {
+       const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + "ID,Type,Machine,Qty\n" + inventory.map(e => `${e.id},${e.type},${e.machine},${e.qty}`).join("\n");
+       const encodedUri = encodeURI(csvContent);
+       const link = document.createElement("a");
+       link.setAttribute("href", encodedUri);
+       link.setAttribute("download", "ink_report.csv");
+       document.body.appendChild(link); link.click(); link.remove();
+    }
+
+    function openModal(id, type, hex, qty) {
+      currentModalTask = { id, type, oldQty: qty };
+      document.getElementById('modal').classList.add('modal-show');
+      document.getElementById('modal-title').innerText = type === 'IN' ? 'รับเข้าสินค้า' : 'เบิกออกสินค้า';
+      document.getElementById('modal-sub').innerText = id;
+      document.getElementById('modal-color').style.backgroundColor = hex;
+      document.getElementById('modal-qty').value = '';
+      const remarkContainer = document.getElementById('modal-remark-container');
+      if (type === 'OUT') {
+        remarkContainer.classList.remove('hidden');
+        document.getElementById('modal-remark').value = '';
+      } else {
+        remarkContainer.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('modal-submit').onclick = async () => {
+      const amt = parseFloat(document.getElementById('modal-qty').value);
+      if (isNaN(amt) || amt <= 0) { showToast("ระบุจำนวนไม่ถูกต้อง", "error"); return; }
+      const remark = document.getElementById('modal-remark').value.trim() || "-";
+      const { id, type, oldQty } = currentModalTask;
+      
+      if (type === 'OUT' && amt > oldQty) { showToast("ยอดคงเหลือไม่พอเบิก!", "error"); return; }
+      
+      closeModal();
+      document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+      
+      const idx = inventory.findIndex(i => i.id === id);
+      if (idx !== -1) {
+        inventory[idx].qty = type === 'IN' ? inventory[idx].qty + amt : inventory[idx].qty - amt;
+        renderCards(currentMachine === 'all' ? null : currentMachine);
+        localStorage.setItem('ink_inventory_cache', JSON.stringify(inventory));
+      }
+      showToast(`บันทึก${type==='IN'?'รับเข้า':'เบิกออก'} ${amt} ชิ้น`, 'success');
+      
+      try {
+        await fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${amt}&type=${type}&remark=${encodeURIComponent(remark)}`);
+        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
+        init(); loadNotificationHistory();
+      } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
+    };
+    // -----------------------------------
+
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
       const isLogged = localStorage.getItem('ink_logged_in') === 'true';
@@ -210,7 +279,6 @@
       if (role === 'admin') document.getElementById('nav-users').classList.remove('hidden');
       renderFromCache(); init(); loadNotificationHistory();
 
-      // Background Auto-Sync รันในพื้นหลังทุกๆ 5 วินาที
       setInterval(async () => {
         await fetchUsers(); 
         try {
@@ -308,7 +376,18 @@
       try { fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${diff}&type=${type}&remark=AdminEdit`).then(()=>{ document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-green-500"; init(); loadNotificationHistory(); }); } catch(e){}
     };
 
-    function renderMachines() { const list = [...new Set(inventory.map(i => i.machine))]; document.getElementById('machine-menu').innerHTML = list.map(m => `<button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-6 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold"><i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span></button>`).join(''); const mSelect = document.getElementById('chart-machine'); if(mSelect){ const cur = mSelect.value; mSelect.innerHTML = '<option value="all">ทุกเครื่อง</option>' + list.map(m => `<option value="${m}">${m}</option>`).join(''); if(list.includes(cur)) mSelect.value = cur; } lucide.createIcons(); }
+    function renderMachines() { 
+      const list = [...new Set(inventory.map(i => i.machine))]; 
+      document.getElementById('machine-menu').innerHTML = list.map(m => `<button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-6 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold"><i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span></button>`).join(''); 
+      const mSelect = document.getElementById('chart-machine'); 
+      if(mSelect){ 
+        const cur = mSelect.value; 
+        mSelect.innerHTML = '<option value="all">ทุกเครื่อง</option>' + list.map(m => `<option value="${m}">${m}</option>`).join(''); 
+        if(list.includes(cur)) mSelect.value = cur; 
+      } 
+      lucide.createIcons(); 
+    }
+    
     function renderFromCache() { const cached = localStorage.getItem('ink_inventory_cache'); if (cached) { inventory = JSON.parse(cached); renderCards(currentMachine==='all'?null:currentMachine); renderMachines(); } }
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if (s) { sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden'); } else { sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden'); } }
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
@@ -318,8 +397,31 @@
     function showToast(m, t) { const c = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-500 w-full font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-[18px] uppercase font-bold">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
     function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     function changeView(v, p=null) { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('sidebar-active')); document.getElementById('inventory-view').classList.add('hidden'); document.getElementById('summary-view').classList.add('hidden'); document.getElementById('users-view').classList.add('hidden'); if (v==='all') { currentMachine='all'; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById('nav-all').classList.add('sidebar-active'); renderCards(); document.getElementById('page-title').innerText="All Items"; } else if (v==='summary') { document.getElementById('summary-view').classList.remove('hidden'); document.getElementById('nav-summary').classList.add('sidebar-active'); loadChart(); document.getElementById('page-title').innerText="Summary Report"; } else if (v==='users') { document.getElementById('users-view').classList.remove('hidden'); document.getElementById('nav-users').classList.add('sidebar-active'); loadUserManagement(); document.getElementById('page-title').innerText="User Management"; } else { currentMachine=p; document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById(`nav-${p.replace(/\s/g,'')}`).classList.add('sidebar-active'); renderCards(p); document.getElementById('page-title').innerText=p; } }
+    
     async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-2 text-slate-400 font-bold">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 8); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => `<div class="border-b pb-2 last:border-none border-slate-50 font-bold"><div class="flex justify-between font-bold text-slate-700"><span>${l[2]==='IN'?'🟢':'🔵'} ${l[3]} ชิ้น</span><span class="text-slate-400 text-[9px] font-bold">${new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="text-[9px] text-slate-400 truncate font-bold">${l[1]}</div></div>`).join(''); } catch(e){} }
-    async function loadChart() { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = (await resp.json()).slice(1), tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value, mFilter = document.getElementById('chart-machine').value; const dates = []; for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); } const filteredInv = mFilter === 'all' ? inventory : inventory.filter(i => i.machine === mFilter); const inkTypes = [...new Set(filteredInv.map(i => i.type))]; const datasets = inkTypes.map(ink => { const itemInfo = filteredInv.find(inv => inv.type === ink); return { label: ink, data: dates.map(d => logs.filter(l => { const invItem = inventory.find(inv => inv.id === l[1]); return new Date(l[0]).toLocaleDateString() === d && invItem?.type === ink && (mFilter === 'all' || invItem?.machine === mFilter); }).reduce((sum, curr) => sum + (filter === 'both' ? curr[3] : (curr[2] === filter ? curr[3] : 0)), 0)), borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true }; }).filter(ds => ds.data.some(v => v > 0)); if (chartInstance) chartInstance.destroy(); chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); }
+    
+    async function loadChart() { 
+      const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); 
+      const logs = (await resp.json()).slice(1), tf = document.getElementById('timeframe').value, filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value, mFilter = document.getElementById('chart-machine') ? document.getElementById('chart-machine').value : 'all'; 
+      const dates = []; 
+      for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); dates.push(d.toLocaleDateString()); } 
+      const filteredInv = mFilter === 'all' ? inventory : inventory.filter(i => i.machine === mFilter); 
+      const inkTypes = [...new Set(filteredInv.map(i => i.type))]; 
+      const datasets = inkTypes.map(ink => { 
+        const itemInfo = filteredInv.find(inv => inv.type === ink); 
+        return { 
+          label: ink, 
+          data: dates.map(d => logs.filter(l => { 
+            const invItem = inventory.find(inv => inv.id === l[1]); 
+            return new Date(l[0]).toLocaleDateString() === d && invItem?.type === ink && (mFilter === 'all' || invItem?.machine === mFilter); 
+          }).reduce((sum, curr) => sum + (filter === 'both' ? curr[3] : (curr[2] === filter ? curr[3] : 0)), 0)), 
+          borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true 
+        }; 
+      }).filter(ds => ds.data.some(v => v > 0)); 
+      if (chartInstance) chartInstance.destroy(); 
+      chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); 
+    }
+    
     document.addEventListener('click', (e) => { const panel = document.getElementById('notification-panel'); const btn = document.getElementById('bell-btn'); if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.add('hidden'); });
   </script>
 </body>
