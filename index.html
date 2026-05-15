@@ -168,7 +168,7 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwIztnBap4TR6fXBWgq3HPEo5QMEG_3kz7ijXkD-7VzvIF8Bd31Ry9WD655GR5Kgk6L/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
-    let cachedLogs = [], lastLogFetchTime = 0; // เพิ่มตัวแปรสำหรับจำค่ากราฟ
+    let cachedLogs = [], lastLogFetchTime = 0;
 
     function updateLoadingBar(percent, show = true) {
       const bar = document.getElementById('top-loading-bar');
@@ -199,6 +199,7 @@
           if (dateStr) {
             const d = new Date(dateStr);
             if (!isNaN(d)) {
+              // คำนวณเวลาไทยและปรับฟอร์แมตวันที่ตามที่ต้องการ
               const thaiTime = new Date(d.getTime() + (7 * 60 * 60 * 1000));
               const day = String(thaiTime.getUTCDate()).padStart(2, '0');
               const month = String(thaiTime.getUTCMonth() + 1).padStart(2, '0');
@@ -209,10 +210,11 @@
               dateStr = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
             }
           }
-          return `"${dateStr}",` + l.slice(1).map(v => `"${v !== null && v !== undefined ? v : ''}"`).join(',');
+          // คืนค่าการแยกด้วยลูกน้ำ (,) แบบไม่มีอัญประกาศครอบ เพื่อให้ Excel แตกเป็นคอลัมน์เหมือนเดิม
+          return `${dateStr},` + l.slice(1).map(v => (v !== null && v !== undefined ? v : '')).join(',');
         }).join("\n");
         
-        const headerRow = logs[0] ? logs[0].map(v => `"${v}"`).join(',') : "วันที่,รหัสสินค้า,ประเภท,จำนวน,หมายเหตุ,ผู้ทำรายการ";
+        const headerRow = logs[0] ? logs[0].join(',') : "วันที่,รหัสสินค้า,ประเภท,จำนวน,หมายเหตุ,ผู้ทำรายการ";
         const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headerRow + "\n" + dataRows;
         
         const encodedUri = encodeURI(csvContent);
@@ -266,7 +268,7 @@
       try {
         await fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${amt}&type=${type}&remark=${encodeURIComponent(remark)}`);
         document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
-        lastLogFetchTime = 0; // เคลียร์แคชกราฟเมื่อมีการอัพเดทสต็อก
+        lastLogFetchTime = 0; 
         init(); loadNotificationHistory();
       } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
     };
@@ -310,7 +312,6 @@
       if (role === 'admin') document.getElementById('nav-users').classList.remove('hidden');
       renderFromCache(); init(); loadNotificationHistory();
       
-      // คืนค่าหน้าล่าสุดเวลากดรีเฟรช
       const savedView = localStorage.getItem('ink_saved_view') || 'all';
       const savedMachine = localStorage.getItem('ink_saved_machine') || null;
       changeView(savedView, savedMachine);
@@ -434,7 +435,6 @@
     function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     
     function changeView(v, p=null) { 
-      // เก็บค่าลง Storage เพื่อจำหน้าล่าสุด
       localStorage.setItem('ink_saved_view', v);
       if(p) localStorage.setItem('ink_saved_machine', p); else localStorage.removeItem('ink_saved_machine');
 
@@ -467,7 +467,6 @@
     async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-2 text-slate-400 font-bold">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 8); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => `<div class="border-b pb-2 last:border-none border-slate-50 font-bold"><div class="flex justify-between font-bold text-slate-700"><span>${l[2]==='IN'?'🟢':'🔵'} ${l[3]} ชิ้น</span><span class="text-slate-400 text-[9px] font-bold">${new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="text-[9px] text-slate-400 truncate font-bold">${l[1]}</div></div>`).join(''); } catch(e){} }
     
     async function loadChart() { 
-      // เพิ่มระบบดึงข้อมูลแบบหน่วงเวลา 15 วินาที ลดการดึงข้อมูลซ้ำซ้อน
       if (Date.now() - lastLogFetchTime > 15000) {
         document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
         const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); 
@@ -498,7 +497,6 @@
       if (chartInstance) chartInstance.destroy(); 
       chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); 
     }
-    
     
     document.addEventListener('click', (e) => { const panel = document.getElementById('notification-panel'); const btn = document.getElementById('bell-btn'); if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.add('hidden'); });
   </script>
