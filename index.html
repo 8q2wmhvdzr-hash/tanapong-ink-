@@ -41,7 +41,7 @@
 
   <div id="login-view" class="fixed inset-0 flex flex-col items-center justify-center p-4 z-[2000]">
     <div class="mb-6 text-center text-white">
-      <div class="bg-white p-4 rounded-3xl shadow-xl mb-4 inline-block"><i data-lucide="printer" class="w-12 h-12 text-[#001b6e]"></i></div>
+      <div class="bg-white p-2 rounded-3xl shadow-xl mb-4 inline-flex items-center justify-center w-24 h-24 mx-auto"><img src="logo.png" alt="Logo" class="max-w-full max-h-full object-contain"></div>
       <h1 class="text-3xl font-bold tracking-tight uppercase italic">Ink Stock Pro</h1>
       <p class="text-sm opacity-70 mt-1 uppercase tracking-widest font-medium">Tanapong Logistic System</p>
     </div>
@@ -57,12 +57,12 @@
 
   <div id="main-view" class="w-full min-h-screen md:flex-row relative">
     <header class="md:hidden bg-[#001b6e] text-white p-4 flex justify-between items-center sticky top-0 z-[1001] shadow-lg">
-      <div class="flex items-center gap-3 font-bold"><i data-lucide="printer" class="w-6 h-6"></i><span class="font-bold text-sm uppercase">Ink System</span></div>
+      <div class="flex items-center gap-3 font-bold"><img src="logo.png" alt="Logo" class="w-8 h-8 object-contain bg-white rounded p-1"><span class="font-bold text-sm uppercase">Ink System</span></div>
       <button onclick="toggleSidebarMobile(true)" class="p-2 bg-white/10 rounded-xl font-bold"><i data-lucide="menu"></i></button>
     </header>
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-[#001b6e] text-white flex flex-col shadow-2xl z-[1002] transition-transform duration-300 sidebar-mobile-hide md:translate-x-0 md:sticky md:top-0 md:h-screen shrink-0">
-      <div class="p-8 border-b border-white/10 text-center hidden md:block"><h1 class="text-xl md:text-2xl font-bold tracking-tighter uppercase italic font-bold">Ink System</h1></div>
+      <div class="p-6 border-b border-white/10 text-center hidden md:block"><img src="logo.png" alt="Logo" class="h-16 mx-auto mb-3 object-contain bg-white rounded-xl p-2"><h1 class="text-xl md:text-2xl font-bold tracking-tighter uppercase italic font-bold">Ink System</h1></div>
       <nav class="flex-1 p-4 space-y-1 overflow-y-auto font-bold">
         <button onclick="changeView('all'); toggleSidebarMobile(false)" id="nav-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition sidebar-active font-bold"><i data-lucide="layout-grid"></i> หน้ารวมทั้งหมด</button>
         <button onclick="changeView('summary'); toggleSidebarMobile(false)" id="nav-summary" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-60 font-bold"><i data-lucide="bar-chart-3"></i> สรุปและรายงาน</button>
@@ -193,11 +193,11 @@
       <h3 class="text-2xl font-bold mb-6 text-slate-800">รายละเอียดรายการ</h3>
       <div class="space-y-4 text-sm font-medium text-slate-600">
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>วัน-เวลา:</span> <span id="log-det-date" class="text-slate-800 font-bold"></span></div>
-        <div class="flex justify-between border-b border-slate-50 pb-3"><span>สินค้า:</span> <span id="log-det-id" class="text-slate-800 font-bold truncate max-w-[150px] text-right"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>สินค้า:</span> <span id="log-det-id" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>ประเภท:</span> <span id="log-det-type" class="text-slate-800 font-bold"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>จำนวน:</span> <span id="log-det-qty" class="text-slate-800 font-bold text-lg"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>ผู้ทำรายการ:</span> <span id="log-det-user" class="text-slate-800 font-bold"></span></div>
-        <div class="flex justify-between"><span>หมายเหตุ:</span> <span id="log-det-remark" class="text-slate-800 font-bold truncate max-w-[150px] text-right"></span></div>
+        <div class="flex justify-between"><span>หมายเหตุ:</span> <span id="log-det-remark" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
       </div>
     </div>
   </div>
@@ -552,7 +552,6 @@
       } 
     }
     
-    // ฟังก์ชันเปิดแสดงรายละเอียดประวัติ
     function showLogDetail(date, id, type, qty, user, remark) {
       document.getElementById('log-det-date').innerText = date;
       document.getElementById('log-det-id').innerText = id;
@@ -576,7 +575,6 @@
         const recent = logs.slice(1).reverse().slice(0, 8); 
         document.getElementById('bell-badge').classList.remove('hidden'); 
         
-        // ทำให้แต่ละบรรทัดกดได้ เพื่อเรียก showLogDetail
         list.innerHTML = recent.map(l => {
           const timeStr = new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
           const fullDateStr = new Date(l[0]).toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
