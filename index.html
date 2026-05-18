@@ -140,7 +140,10 @@
       <div id="modal-color" class="w-16 h-16 rounded-2xl mx-auto mb-4 border border-slate-50 shadow-inner"></div>
       <h3 id="modal-title" class="text-2xl font-bold mb-1 text-slate-800 font-bold"></h3>
       <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase break-all font-bold tracking-widest"></p>
-      <div class="mb-4 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">ระบุจำนวนสินค้า</label><input type="number" id="modal-qty" onkeypress="if(event.key==='Enter') document.getElementById('modal-submit').click()" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all font-bold"></div>
+      <div class="mb-4 text-left">
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">ระบุจำนวนสินค้า</label>
+        <input type="number" id="modal-qty" min="1" onkeypress="if(event.key==='-'||event.key==='e') return false; if(event.key==='Enter') document.getElementById('modal-submit').click()" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all font-bold">
+      </div>
       <div id="modal-remark-container" class="mb-8 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1 font-bold">หมายเหตุ</label><input type="text" id="modal-remark" onkeypress="if(event.key==='Enter') document.getElementById('modal-submit').click()" placeholder="..." class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-semibold font-bold"></div>
       <div class="flex gap-4 font-bold">
         <button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button>
@@ -175,8 +178,27 @@
       <div id="admin-stock-color" class="w-16 h-16 rounded-2xl mx-auto mb-4 shadow-inner border"></div>
       <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">แก้ไขยอดสต็อก</h3>
       <p id="admin-stock-sub" class="text-[10px] text-slate-400 mb-8 uppercase break-all font-bold"></p>
-      <div class="mb-8 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label><input type="number" id="admin-stock-qty" onkeypress="if(event.key==='Enter') document.getElementById('admin-stock-submit').click()" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all"></div>
+      <div class="mb-8 text-left">
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label>
+        <input type="number" id="admin-stock-qty" min="0" onkeypress="if(event.key==='-'||event.key==='e') return false; if(event.key==='Enter') document.getElementById('admin-stock-submit').click()" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all">
+      </div>
       <div class="flex gap-4"><button onclick="closeAdminStockModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl">ยกเลิก</button><button id="admin-stock-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div>
+    </div>
+  </div>
+
+  <div id="log-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1900] p-4 text-center">
+    <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300 relative text-left">
+      <button onclick="document.getElementById('log-detail-modal').classList.remove('modal-show')" class="absolute top-6 right-6 p-2 bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
+      <div class="w-14 h-14 rounded-2xl bg-blue-50 text-[#102a96] flex items-center justify-center mb-6 shadow-inner"><i data-lucide="file-text" class="w-6 h-6"></i></div>
+      <h3 class="text-2xl font-bold mb-6 text-slate-800">รายละเอียดรายการ</h3>
+      <div class="space-y-4 text-sm font-medium text-slate-600">
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>วัน-เวลา:</span> <span id="log-det-date" class="text-slate-800 font-bold"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>สินค้า:</span> <span id="log-det-id" class="text-slate-800 font-bold truncate max-w-[150px] text-right"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>ประเภท:</span> <span id="log-det-type" class="text-slate-800 font-bold"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>จำนวน:</span> <span id="log-det-qty" class="text-slate-800 font-bold text-lg"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>ผู้ทำรายการ:</span> <span id="log-det-user" class="text-slate-800 font-bold"></span></div>
+        <div class="flex justify-between"><span>หมายเหตุ:</span> <span id="log-det-remark" class="text-slate-800 font-bold truncate max-w-[150px] text-right"></span></div>
+      </div>
     </div>
   </div>
 
@@ -530,7 +552,42 @@
       } 
     }
     
-    async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 8); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => `<div class="py-2.5 border-b border-slate-100 last:border-0"><div class="flex justify-between items-center mb-1"><span class="text-xs font-bold text-slate-700 truncate pr-2">${l[1]}</span><span class="text-[9px] text-slate-400 font-medium shrink-0">${new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</span></div><div class="text-[11px] font-bold text-slate-500">${l[2]==='IN'?'รับเข้า':'เบิกออก'} <span class="text-slate-800">${l[3]}</span> ชิ้น</div></div>`).join(''); } catch(e){} }
+    // ฟังก์ชันเปิดแสดงรายละเอียดประวัติ
+    function showLogDetail(date, id, type, qty, user, remark) {
+      document.getElementById('log-det-date').innerText = date;
+      document.getElementById('log-det-id').innerText = id;
+      document.getElementById('log-det-type').innerText = type === 'IN' ? 'รับเข้า (IN)' : 'เบิกออก (OUT)';
+      document.getElementById('log-det-type').className = type === 'IN' ? 'text-green-600 font-bold' : 'text-[#0a2384] font-bold';
+      document.getElementById('log-det-qty').innerText = qty + ' ชิ้น';
+      document.getElementById('log-det-user').innerText = user || '-';
+      document.getElementById('log-det-remark').innerText = remark || '-';
+      document.getElementById('log-detail-modal').classList.add('modal-show');
+    }
+
+    async function loadNotificationHistory() { 
+      try { 
+        const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); 
+        const logs = await resp.json(); 
+        const list = document.getElementById('notification-list'); 
+        if (logs.length <= 1) { 
+          list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; 
+          return; 
+        } 
+        const recent = logs.slice(1).reverse().slice(0, 8); 
+        document.getElementById('bell-badge').classList.remove('hidden'); 
+        
+        // ทำให้แต่ละบรรทัดกดได้ เพื่อเรียก showLogDetail
+        list.innerHTML = recent.map(l => {
+          const timeStr = new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+          const fullDateStr = new Date(l[0]).toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+          const safeId = String(l[1]).replace(/'/g, "\\'");
+          const safeUser = String(l[4] || '-').replace(/'/g, "\\'");
+          const safeRemark = String(l[5] || '-').replace(/'/g, "\\'");
+          
+          return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${l[2]}', '${l[3]}', '${safeUser}', '${safeRemark}')" class="py-2.5 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-2 -mx-2 rounded-xl transition-all"><div class="flex justify-between items-center mb-1"><span class="text-xs font-bold text-slate-700 truncate pr-2">${l[1]}</span><span class="text-[9px] text-slate-400 font-medium shrink-0">${timeStr}</span></div><div class="text-[11px] font-bold text-slate-500">${l[2]==='IN'?'รับเข้า':'เบิกออก'} <span class="text-slate-800">${l[3]}</span> ชิ้น</div></div>`;
+        }).join(''); 
+      } catch(e){} 
+    }
     
     async function loadChart() { 
       if (Date.now() - lastLogFetchTime > 15000) {
