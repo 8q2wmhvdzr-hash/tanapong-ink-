@@ -29,6 +29,7 @@
     @media (max-width: 767px) { #main-view.active { display: block; } }
     @media print { aside, header, .nav-btn, #toast-container { display: none !important; } .p-8 { padding: 0 !important; } }
     
+    /* ทำให้กล่องปฏิทินกดได้ทั้งกรอบ */
     input[type="date"] { position: relative; font-family: 'Kanit', sans-serif; }
     input[type="date"]::-webkit-calendar-picker-indicator {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;
@@ -103,7 +104,20 @@
                 <button onclick="window.print()" class="px-4 py-2 bg-red-600 text-white rounded-xl font-bold">PDF</button>
                 <select id="chart-type" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="line">กราฟเส้น</option><option value="bar">กราฟแท่ง</option></select>
                 <select id="chart-filter" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="OUT">เบิกออก</option><option value="IN">รับเข้า</option><option value="both">ดูทั้งหมด</option></select>
-                <select id="chart-machine" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="all">ทุกเครื่อง</option></select>
+                
+                <div class="relative inline-block text-left font-bold" id="machine-select-container">
+                  <button type="button" onclick="toggleMachineDropdown()" class="bg-slate-100 rounded-xl px-3 py-2 font-bold outline-none flex items-center gap-1.5 text-slate-700">
+                    <span id="machine-select-label">ทุกเครื่อง</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                  </button>
+                  <div id="machine-select-dropdown" class="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-3 hidden z-[110] max-h-60 overflow-y-auto space-y-2 text-left">
+                    <label class="flex items-center gap-2 cursor-pointer py-1 px-1.5 hover:bg-slate-50 rounded-lg text-slate-700">
+                      <input type="checkbox" id="chk-m-all" checked onchange="toggleAllMachines(this)" class="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                      <span>ทุกเครื่อง</span>
+                    </label>
+                    <div id="machine-checkboxes-list" class="space-y-2 border-t pt-2 border-slate-100"></div>
+                  </div>
+                </div>
                 
                 <div class="flex items-center bg-slate-100 rounded-[1rem] px-2 py-1 gap-1 border border-slate-200">
                   <div class="relative flex items-center gap-1.5 px-2 py-1.5 hover:bg-slate-200 rounded-lg transition overflow-hidden">
@@ -208,6 +222,31 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwYEfq3voyoM-2gJU87uj_0ZDEL07byE41xrzmNoZoYnMW6k_JMB7ktWP5GWEr-UCFx/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
     let cachedLogs = [], lastLogFetchTime = 0;
+
+    // ฟังก์ชันเปิด/ปิด เมนูดร็อปดาวน์เลือกเครื่องจักรในหน้าสรุปรายงาน
+    function toggleMachineDropdown() {
+      const dp = document.getElementById('machine-select-dropdown');
+      if (dp) dp.classList.toggle('hidden');
+    }
+
+    // ฟังก์ชันเมื่อกดเลือก "ทุกเครื่อง" ให้เคลียร์ช่องอื่นออก
+    function toggleAllMachines(el) {
+      if (el.checked) {
+        document.querySelectorAll('.chk-machine').forEach(chk => chk.checked = false);
+      }
+      loadChart();
+    }
+
+    // ฟังก์ชันเมื่อมีการติ๊กเลือกเครื่องจักรรายตัว
+    function onMachineCheckChange() {
+      const chkAll = document.getElementById('chk-m-all');
+      const checkedCount = document.querySelectorAll('.chk-machine:checked').length;
+      if (chkAll) {
+        if (checkedCount > 0) chkAll.checked = false;
+        else chkAll.checked = true;
+      }
+      loadChart();
+    }
 
     function updateLoadingBar(percent, show = true) {
       const bar = document.getElementById('top-loading-bar');
@@ -453,7 +492,6 @@
       showToast(`ปรับปรุงยอดสำเร็จ ยอดใหม่คือ ${tQty}`, 'success');
       try { 
         const currentUser = localStorage.getItem('ink_current_user') || 'Unknown';
-        // ส่งคำสั่งแบบ EDIT เพื่อไปตั้งค่าตรงๆ ใน Code.gs ไม่ใช่การ IN หรือ OUT
         fetch(`${API_URL}?action=update&id=${encodeURIComponent(id)}&amt=${tQty}&type=EDIT&remark=AdminEdit&user=${encodeURIComponent(currentUser)}`).then(()=>{ document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-green-500"; lastLogFetchTime = 0; init(); loadNotificationHistory(); }); 
       } catch(e){}
     };
@@ -494,12 +532,20 @@
 
       document.getElementById('machine-menu').innerHTML = html; 
       
-      const mSelect = document.getElementById('chart-machine'); 
-      if(mSelect){ 
-        const cur = mSelect.value; 
-        mSelect.innerHTML = '<option value="all">ทุกเครื่อง</option>' + list.map(m => `<option value="${m}">${m}</option>`).join(''); 
-        if(list.includes(cur)) mSelect.value = cur; 
-      } 
+      // เรนเดอร์รายการกล่องติ๊ก (Checkbox) สำหรับดรอปดาวน์เลือกหลายเครื่องในรายงาน
+      const mListDiv = document.getElementById('machine-checkboxes-list');
+      if (mListDiv) {
+        const checkedMachines = Array.from(document.querySelectorAll('.chk-machine:checked')).map(el => el.value);
+        mListDiv.innerHTML = list.map(m => {
+          const isChecked = checkedMachines.includes(m);
+          return `
+            <label class="flex items-center gap-2 cursor-pointer py-1 px-1.5 hover:bg-slate-50 rounded-lg text-slate-700 font-bold text-left">
+              <input type="checkbox" value="${m}" ${isChecked ? 'checked' : ''} onchange="onMachineCheckChange()" class="chk-machine rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+              <span class="truncate">${m}</span>
+            </label>
+          `;
+        }).join('');
+      }
       lucide.createIcons(); 
     }
     
@@ -555,7 +601,6 @@
     function showLogDetail(date, id, type, qty, user, remark) {
       document.getElementById('log-det-date').innerText = date;
       document.getElementById('log-det-id').innerText = id;
-      // เพิ่มเงื่อนไขให้แสดงคำว่า แก้ไขสต็อก (EDIT) ถ้าเป็นประเภท EDIT
       document.getElementById('log-det-type').innerText = type === 'IN' ? 'รับเข้า (IN)' : type === 'OUT' ? 'เบิกออก (OUT)' : 'แก้ไขสต็อก (EDIT)';
       document.getElementById('log-det-type').className = type === 'IN' ? 'text-green-600 font-bold' : type === 'OUT' ? 'text-[#0a2384] font-bold' : 'text-orange-500 font-bold';
       document.getElementById('log-det-qty').innerText = qty + ' ชิ้น';
@@ -601,8 +646,25 @@
       
       const startDateInput = document.getElementById('chart-date-start') ? document.getElementById('chart-date-start').value : '';
       const endDateInput = document.getElementById('chart-date-end') ? document.getElementById('chart-date-end').value : '';
-      const filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value, mFilter = document.getElementById('chart-machine') ? document.getElementById('chart-machine').value : 'all'; 
+      const filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value; 
       
+      // ดึงค่าการติ๊กเลือกเครื่องจักร
+      const chkAll = document.getElementById('chk-m-all');
+      const allChecked = chkAll ? chkAll.checked : true;
+      const checkedBoxes = Array.from(document.querySelectorAll('.chk-machine:checked')).map(el => el.value);
+      
+      // ปรับเปลี่ยนข้อความป้ายกำกับของปุ่มแสดงตามรายการที่เลือก
+      const labelObj = document.getElementById('machine-select-label');
+      if (labelObj) {
+        if (allChecked || checkedBoxes.length === 0) {
+          labelObj.innerText = "ทุกเครื่อง";
+        } else if (checkedBoxes.length === 1) {
+          labelObj.innerText = checkedBoxes[0];
+        } else {
+          labelObj.innerText = `เลือกแล้ว (${checkedBoxes.length})`;
+        }
+      }
+
       const formatCE = (d) => { const dt = new Date(d); return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`; };
       
       let dates = []; 
@@ -623,17 +685,17 @@
         for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(formatCE(d)); }
       }
 
-      const filteredInv = mFilter === 'all' ? inventory : inventory.filter(i => i.machine === mFilter); 
+      // กรองเครื่องจักรตามรายการที่ติ๊กเลือก
+      const filteredInv = allChecked || checkedBoxes.length === 0 ? inventory : inventory.filter(i => checkedBoxes.includes(i.machine)); 
       const inkTypes = [...new Set(filteredInv.map(i => i.type))]; 
       
       const datasets = inkTypes.map(ink => { 
         const itemInfo = filteredInv.find(inv => inv.type === ink); 
         return { 
           label: ink, 
-          // ปรับตรรกะให้ไม่เอาประเภท EDIT มาคำนวณในกราฟสถิติรวม
           data: dates.map(d => logs.filter(l => { 
             const invItem = inventory.find(inv => inv.id === l[1]); 
-            return formatCE(l[0]) === d && invItem?.type === ink && (mFilter === 'all' || invItem?.machine === mFilter); 
+            return formatCE(l[0]) === d && invItem?.type === ink && (allChecked || checkedBoxes.length === 0 || checkedBoxes.includes(invItem?.machine)); 
           }).reduce((sum, curr) => sum + (curr[2] === 'EDIT' ? 0 : (filter === 'both' ? curr[3] : (curr[2] === filter ? curr[3] : 0))), 0)), 
           borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true 
         }; 
@@ -643,7 +705,18 @@
       chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); 
     }
     
-    document.addEventListener('click', (e) => { const panel = document.getElementById('notification-panel'); const btn = document.getElementById('bell-btn'); if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.add('hidden'); });
+    document.addEventListener('click', (e) => { 
+      const panel = document.getElementById('notification-panel'); 
+      const btn = document.getElementById('bell-btn'); 
+      if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.add('hidden'); 
+      
+      // ปิดกล่องดร็อปดาวน์เลือกเครื่องเมื่อกดพื้นที่ภายนอก
+      const machPanel = document.getElementById('machine-select-dropdown');
+      const machBtn = document.getElementById('machine-select-container');
+      if (machPanel && !machPanel.classList.contains('hidden') && !machPanel.contains(e.target) && !machBtn.contains(e.target)) {
+        machPanel.classList.add('hidden');
+      }
+    });
   </script>
 </body>
 </html>
