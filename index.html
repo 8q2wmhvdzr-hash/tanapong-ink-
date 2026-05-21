@@ -29,7 +29,6 @@
     @media (max-width: 767px) { #main-view.active { display: block; } }
     @media print { aside, header, .nav-btn, #toast-container { display: none !important; } .p-8 { padding: 0 !important; } }
     
-    /* ทำให้กล่องปฏิทินกดได้ทั้งกรอบ */
     input[type="date"] { position: relative; font-family: 'Kanit', sans-serif; }
     input[type="date"]::-webkit-calendar-picker-indicator {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;
@@ -532,7 +531,6 @@
 
       document.getElementById('machine-menu').innerHTML = html; 
       
-      // เรนเดอร์รายการกล่องติ๊ก (Checkbox) สำหรับดรอปดาวน์เลือกหลายเครื่องในรายงาน
       const mListDiv = document.getElementById('machine-checkboxes-list');
       if (mListDiv) {
         const checkedMachines = Array.from(document.querySelectorAll('.chk-machine:checked')).map(el => el.value);
@@ -618,12 +616,13 @@
           list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; 
           return; 
         } 
-        const recent = logs.slice(1).reverse().slice(0, 8); 
+        const recent = logs.slice(1).reverse().slice(0, 100); 
         document.getElementById('bell-badge').classList.remove('hidden'); 
         
         list.innerHTML = recent.map(l => {
-          const timeStr = new Date(l[0]).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
-          const fullDateStr = new Date(l[0]).toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+          const dt = new Date(l[0]);
+          const timeStr = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()} ${dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}`;
+          const fullDateStr = dt.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
           const safeId = String(l[1]).replace(/'/g, "\\'");
           const safeUser = String(l[4] || '-').replace(/'/g, "\\'");
           const safeRemark = String(l[5] || '-').replace(/'/g, "\\'");
@@ -648,12 +647,10 @@
       const endDateInput = document.getElementById('chart-date-end') ? document.getElementById('chart-date-end').value : '';
       const filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value; 
       
-      // ดึงค่าการติ๊กเลือกเครื่องจักร
       const chkAll = document.getElementById('chk-m-all');
       const allChecked = chkAll ? chkAll.checked : true;
       const checkedBoxes = Array.from(document.querySelectorAll('.chk-machine:checked')).map(el => el.value);
       
-      // ปรับเปลี่ยนข้อความป้ายกำกับของปุ่มแสดงตามรายการที่เลือก
       const labelObj = document.getElementById('machine-select-label');
       if (labelObj) {
         if (allChecked || checkedBoxes.length === 0) {
@@ -685,7 +682,6 @@
         for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(formatCE(d)); }
       }
 
-      // กรองเครื่องจักรตามรายการที่ติ๊กเลือก
       const filteredInv = allChecked || checkedBoxes.length === 0 ? inventory : inventory.filter(i => checkedBoxes.includes(i.machine)); 
       const inkTypes = [...new Set(filteredInv.map(i => i.type))]; 
       
@@ -710,7 +706,6 @@
       const btn = document.getElementById('bell-btn'); 
       if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.add('hidden'); 
       
-      // ปิดกล่องดร็อปดาวน์เลือกเครื่องเมื่อกดพื้นที่ภายนอก
       const machPanel = document.getElementById('machine-select-dropdown');
       const machBtn = document.getElementById('machine-select-container');
       if (machPanel && !machPanel.classList.contains('hidden') && !machPanel.contains(e.target) && !machBtn.contains(e.target)) {
