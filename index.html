@@ -220,7 +220,7 @@
   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzROx_1I5peCQDxI_rGZlbAKfXW569FGC3pQsjAYl4n3QBKfLONbHmaYMCzGVBJAPj9/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbzwpMeDWfswR2AhAu6QBNTQkfdbOzr_AsSyeVAVXa9lTU0DoY0w36UWmZug1L6pT3oz/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
     let cachedLogs = [], lastLogFetchTime = 0;
 
@@ -454,7 +454,10 @@
           </div>
           <div class="w-full"><div class="flex justify-between mb-2 text-xs font-semibold"><span>คงเหลือ</span><span>${item.qty}</span></div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-5"><div class="h-full transition-all duration-1000" style="width:${Math.min((item.qty/25)*100, 100)}%; background-color:${item.hex}"></div></div>
-            <div class="grid grid-cols-2 gap-2.5"><button onclick="openModal('${item.id}', 'IN', '${item.hex}', ${item.qty})" class="py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold active:scale-95 transition-all">รับเข้า</button><button onclick="openModal('${item.id}', 'OUT', '${item.hex}', ${item.qty})" class="py-2.5 bg-[#0a2384] text-white rounded-xl text-xs font-bold active:scale-95 transition-all">เบิกออก</button></div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button onclick="openModal('${item.id}', 'IN', '${item.hex}', ${item.qty})" class="py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold active:scale-95 transition-all">รับเข้า</button>
+              <button onclick="openModal('${item.id}', 'OUT', '${item.hex}', ${item.qty})" class="py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold active:scale-95 transition-all">เบิกออก</button>
+            </div>
           </div>
         </div>`).join('');
       lucide.createIcons();
