@@ -210,6 +210,7 @@
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>สินค้า:</span> <span id="log-det-id" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>ประเภท:</span> <span id="log-det-type" class="text-slate-800 font-bold"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>จำนวน:</span> <span id="log-det-qty" class="text-slate-800 font-bold text-lg"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>ยอดคงเหลือ:</span> <span id="log-det-balance" class="text-slate-800 font-bold text-lg text-blue-600"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>ผู้ทำรายการ:</span> <span id="log-det-user" class="text-slate-800 font-bold"></span></div>
         <div class="flex justify-between"><span>หมายเหตุ:</span> <span id="log-det-remark" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
       </div>
@@ -595,12 +596,13 @@
       } 
     }
     
-    function showLogDetail(date, id, type, qty, user, remark) {
+    function showLogDetail(date, id, type, qty, user, remark, balance) {
       document.getElementById('log-det-date').innerText = date;
       document.getElementById('log-det-id').innerText = id;
       document.getElementById('log-det-type').innerText = type === 'IN' ? 'รับเข้า (IN)' : type === 'OUT' ? 'เบิกออก (OUT)' : 'แก้ไขสต็อก (EDIT)';
       document.getElementById('log-det-type').className = type === 'IN' ? 'text-green-600 font-bold' : type === 'OUT' ? 'text-[#0a2384] font-bold' : 'text-orange-500 font-bold';
       document.getElementById('log-det-qty').innerText = qty + ' ชิ้น';
+      document.getElementById('log-det-balance').innerText = (balance && balance !== 'undefined' && balance !== '-') ? balance + ' ชิ้น' : '-';
       document.getElementById('log-det-user').innerText = user || '-';
       document.getElementById('log-det-remark').innerText = remark || '-';
       document.getElementById('log-detail-modal').classList.add('modal-show');
@@ -625,8 +627,9 @@
           const safeId = String(l[1]).replace(/'/g, "\\'");
           const safeUser = String(l[4] || '-').replace(/'/g, "\\'");
           const safeRemark = String(l[5] || '-').replace(/'/g, "\\'");
+          const safeBalance = String(l[6] || '-').replace(/'/g, "\\'");
           
-          return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${l[2]}', '${l[3]}', '${safeUser}', '${safeRemark}')" class="py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-3 -mx-3 rounded-2xl transition-all"><div class="flex justify-between items-start mb-1.5"><span class="text-[14px] font-bold text-slate-800 pr-2 leading-tight">${l[1]}</span><span class="text-[10px] text-slate-400 font-bold shrink-0 pt-0.5">${timeStr}</span></div><div class="text-[12px] font-bold text-slate-500">${l[2]==='IN'?'รับเข้า':l[2]==='OUT'?'เบิกออก':'แก้ไขเป็น'} <span class="text-slate-800">${l[3]}</span> ชิ้น</div></div>`;
+          return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${l[2]}', '${l[3]}', '${safeUser}', '${safeRemark}', '${safeBalance}')" class="py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-3 -mx-3 rounded-2xl transition-all"><div class="flex justify-between items-start mb-1.5"><span class="text-[14px] font-bold text-slate-800 pr-2 leading-tight">${l[1]}</span><span class="text-[10px] text-slate-400 font-bold shrink-0 pt-0.5">${timeStr}</span></div><div class="text-[12px] font-bold text-slate-500">${l[2]==='IN'?'รับเข้า':l[2]==='OUT'?'เบิกออก':'แก้ไขเป็น'} <span class="text-slate-800">${l[3]}</span> ชิ้น</div></div>`;
         }).join(''); 
       } catch(e){} 
     }
