@@ -220,7 +220,7 @@
   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzwpMeDWfswR2AhAu6QBNTQkfdbOzr_AsSyeVAVXa9lTU0DoY0w36UWmZug1L6pT3oz/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbw2_GFfX3Jci1-s9Kpdr6Yt6khNfJvxyYKN6K8GVCJmjSO6RqWFKn3VtkJ6zyhdLFn0/exec"; 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
     let cachedLogs = [], lastLogFetchTime = 0;
 
@@ -443,7 +443,7 @@
       const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
       grid.innerHTML = data.map(item => `
         <div class="card bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-100 relative flex flex-col justify-between min-h-[240px] z-0">
-          ${item.qty <= 5 ? '<div class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-2.5 py-1 rounded-full animate-bounce shadow-md z-10">🚨 LOW STOCK</div>' : ''}
+          ${item.qty <= item.minStock ? '<div class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-2.5 py-1 rounded-full animate-bounce shadow-md z-10">🚨 LOW STOCK</div>' : ''}
           <div class="w-full">
             <div class="flex justify-between items-start mb-4">
               <div class="flex items-center gap-2"><div class="w-9 h-9 rounded-xl border shrink-0 shadow-inner" style="background-color:${item.hex}"></div>
