@@ -124,6 +124,44 @@
       <h3 class="text-2xl font-bold mb-2 text-slate-800">แก้ไขข้อมูลสต็อก</h3>
       <p id="admin-stock-sub" class="text-[10px] text-slate-400 mb-6 uppercase break-all font-bold"></p>
       
+      <div class="mb-6 text-left border-b border-slate-100 pb-6 w-full">
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label>
+        
+        <div class="flex gap-2 w-full">
+            <input type="number" id="admin-stock-qty" min="0" onkeypress="if(event.key==='-'||event.key==='e') return false; if(event.key==='Enter') document.getElementById('admin-stock-submit').click()" class="min-w-0 w-full flex-1 text-center text-3xl font-bold p-4 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all">
+            <button id="admin-stock-submit" class="px-6 bg-[#102a96] text-white font-bold rounded-3xl shadow-md shrink-0">บันทึก</button>
+        </div>
+      </div>
+
+      <div class="mb-6 text-left w-full">
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">อัปโหลดรูปภาพสินค้า (Admin)</label>
+        <input type="file" id="admin-image-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-3 overflow-hidden">
+        <button id="btn-upload-img" onclick="uploadAdminImage()" class="w-full py-3 bg-slate-800 text-white font-bold rounded-2xl shadow-md flex items-center justify-center gap-2 text-sm shrink-0"><i data-lucide="image" class="w-4 h-4"></i> อัปโหลดรูป</button>
+      </div>
+
+      <button onclick="closeAdminStockModal()" class="w-full py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl shrink-0">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+      
+      <div class="mb-6 text-left border-b border-slate-100 pb-6 w-full">
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label>
+        
+        <div class="flex gap-2 w-full">
+            <input type="number" id="admin-stock-qty" min="0" onkeypress="if(event.key==='-'||event.key==='e') return false; if(event.key==='Enter') document.getElementById('admin-stock-submit').click()" class="min-w-0 w-full flex-1 text-center text-3xl font-bold p-4 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all">
+            <button id="admin-stock-submit" class="px-6 bg-[#102a96] text-white font-bold rounded-3xl shadow-md shrink-0">บันทึก</button>
+        </div>
+      </div>
+
+      <div class="mb-6 text-left w-full">
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">อัปโหลดรูปภาพสินค้า (Admin)</label>
+        <input type="file" id="admin-image-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-3 overflow-hidden">
+        <button id="btn-upload-img" onclick="uploadAdminImage()" class="w-full py-3 bg-slate-800 text-white font-bold rounded-2xl shadow-md flex items-center justify-center gap-2 text-sm shrink-0"><i data-lucide="image" class="w-4 h-4"></i> อัปโหลดรูป</button>
+      </div>
+
+      <button onclick="closeAdminStockModal()" class="w-full py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl shrink-0">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+      
       <div class="mb-6 text-left border-b border-slate-100 pb-6">
         <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label>
         <div class="flex gap-2">
@@ -147,7 +185,7 @@
   <script>
     // ---------------------------------------------------------------------
     // นำ URL ของ Web App ใหม่ที่ได้จาก GAS มาวางแทนที่บรรทัดด้านล่างนี้
-    const API_URL = "https://script.google.com/macros/s/AKfycbzCh_ksCThWfza9Kqq26ZFLCu5PieTpCQFvahtW5VSmBjFbj5Lei57pN_wPJa8A8cB9/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbx-y8HbpQstGNbi16kjPm0socKGSswze-Xrmq1O1hyo1K8hh25FUrHAbqmoVTFPC32S/exec"; 
     // ---------------------------------------------------------------------
 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminStockTask = null;
