@@ -20,6 +20,7 @@
     #login-view.active { display: flex; background-color: #001b6e; }
     #main-view.active { display: flex; background-color: #f1f5f9; }
     @media (max-width: 767px) { #main-view.active { display: block; } }
+    @media print { aside, header, .nav-btn, #toast-container { display: none !important; } .p-8 { padding: 0 !important; } }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
   </style>
 </head>
@@ -82,7 +83,49 @@
 
       <div class="p-4 md:p-8 flex-1 min-w-0">
         <div id="inventory-view" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 font-bold"></div>
-        <div id="summary-view" class="hidden space-y-6"></div> <div id="users-view" class="hidden space-y-6 font-bold">
+        
+        <div id="summary-view" class="hidden space-y-6">
+          <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+            <div class="flex flex-wrap justify-between items-center mb-8 gap-4 font-bold">
+              <h3 class="font-bold text-lg uppercase italic font-bold">สถิติเบิกจ่ายรวม</h3>
+              <div class="flex flex-wrap items-center gap-2 text-[10px] font-bold">
+                <button onclick="exportExcel()" class="px-4 py-2 bg-green-600 text-white rounded-xl font-bold">EXCEL</button>
+                <button onclick="window.print()" class="px-4 py-2 bg-red-600 text-white rounded-xl font-bold">PDF</button>
+                <select id="chart-type" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="line">กราฟเส้น</option><option value="bar">กราฟแท่ง</option></select>
+                <select id="chart-filter" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="OUT">เบิกออก</option><option value="IN">รับเข้า</option><option value="both">ดูทั้งหมด</option></select>
+                
+                <div class="relative inline-block text-left font-bold" id="machine-select-container">
+                  <button type="button" onclick="toggleMachineDropdown()" class="bg-slate-100 rounded-xl px-3 py-2 font-bold outline-none flex items-center gap-1.5 text-slate-700">
+                    <span id="machine-select-label">ทุกเครื่อง</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                  </button>
+                  <div id="machine-select-dropdown" class="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-3 hidden z-[110] max-h-60 overflow-y-auto space-y-2 text-left">
+                    <label class="flex items-center gap-2 cursor-pointer py-1 px-1.5 hover:bg-slate-50 rounded-lg text-slate-700">
+                      <input type="checkbox" id="chk-m-all" checked onchange="toggleAllMachines(this)" class="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                      <span>ทุกเครื่อง</span>
+                    </label>
+                    <div id="machine-checkboxes-list" class="space-y-2 border-t pt-2 border-slate-100"></div>
+                  </div>
+                </div>
+                
+                <div class="flex items-center bg-slate-100 rounded-[1rem] px-2 py-1 gap-1 border border-slate-200">
+                  <div class="relative flex items-center gap-1.5 px-2 py-1.5 hover:bg-slate-200 rounded-lg transition overflow-hidden">
+                    <i data-lucide="calendar" class="w-4 h-4 text-slate-500 pointer-events-none z-0"></i>
+                    <input type="date" id="chart-date-start" onchange="loadChart()" class="bg-transparent text-xs font-bold outline-none text-slate-700 w-[95px] cursor-pointer relative z-10">
+                  </div>
+                  <span class="text-xs text-slate-400 font-bold px-1">-</span>
+                  <div class="relative flex items-center gap-1.5 px-2 py-1.5 hover:bg-slate-200 rounded-lg transition overflow-hidden">
+                    <input type="date" id="chart-date-end" onchange="loadChart()" class="bg-transparent text-xs font-bold outline-none text-slate-700 w-[95px] cursor-pointer relative z-10">
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div class="h-[400px] md:h-[500px] font-bold"><canvas id="mainChart"></canvas></div>
+          </div>
+        </div>
+
+        <div id="users-view" class="hidden space-y-6 font-bold">
           <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
             <div class="mb-6 flex justify-between items-center border-b pb-4">
               <h3 class="text-lg font-bold text-slate-800">จัดการผู้ใช้งานระบบ</h3>
@@ -126,17 +169,17 @@
       <div class="mb-6 text-left border-b border-slate-100 pb-6">
         <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">ยอดคงเหลือใหม่</label>
         <div class="flex gap-2">
-            <input type="number" id="admin-stock-qty" min="0" onkeypress="if(event.key==='-'||event.key==='e') return false; if(event.key==='Enter') document.getElementById('admin-stock-submit').click()" class="w-full text-center text-3xl font-bold p-4 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all">
-            <button id="admin-stock-submit" class="px-6 bg-[#102a96] text-white font-bold rounded-3xl shadow-md whitespace-nowrap">บันทึก</button>
+            <input type="number" id="admin-stock-qty" min="0" onkeypress="if(event.key==='-'||event.key==='e') return false; if(event.key==='Enter') document.getElementById('admin-stock-submit').click()" class="min-w-0 flex-1 w-full text-center text-3xl font-bold p-4 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all">
+            <button id="admin-stock-submit" class="px-6 bg-[#102a96] text-white font-bold rounded-3xl shadow-md shrink-0">บันทึก</button>
         </div>
       </div>
 
-      <div class="mb-6 text-left">
+      <div class="mb-6 text-left w-full">
         <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">อัปโหลดรูปภาพสินค้า (Admin)</label>
         <div class="w-full overflow-hidden bg-slate-50 rounded-2xl mb-3 border border-slate-100 p-2">
             <input type="file" id="admin-image-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
         </div>
-        <button id="btn-upload-img" onclick="uploadAdminImage()" class="w-full py-3 bg-slate-800 text-white font-bold rounded-2xl shadow-md flex items-center justify-center gap-2 text-sm"><i data-lucide="image" class="w-4 h-4"></i> อัปโหลดรูป</button>
+        <button id="btn-upload-img" onclick="uploadAdminImage()" class="w-full py-3 bg-slate-800 text-white font-bold rounded-2xl shadow-md flex items-center justify-center gap-2 text-sm shrink-0"><i data-lucide="image" class="w-4 h-4"></i> อัปโหลดรูป</button>
       </div>
 
       <button onclick="closeAdminStockModal()" class="w-full py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl">ปิดหน้าต่าง</button>
@@ -145,15 +188,33 @@
 
   <div id="admin-action-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1600] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div id="admin-action-icon" class="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner font-bold"></div> <h3 id="admin-action-title" class="text-2xl font-bold mb-8 text-slate-800 font-bold"></h3> <div class="space-y-4 mb-8 text-left"> <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Username</label><input type="text" id="admin-action-user" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label><input type="password" id="admin-action-pass" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> </div> <div class="flex gap-4"><button onclick="closeAdminActionModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="admin-action-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div> </div> </div>
   <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1700] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner font-bold"><i data-lucide="trash-2"></i></div> <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">ยืนยันการลบ?</h3> <p id="confirm-msg" class="text-sm text-slate-400 mb-8 font-medium px-4"></p> <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 shadow-xl transition-all">ลบทิ้ง</button></div> </div> </div>
+  <div id="log-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1900] p-4 text-center">
+    <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300 relative text-left">
+      <button onclick="document.getElementById('log-detail-modal').classList.remove('modal-show')" class="absolute top-6 right-6 p-2 bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
+      <div class="w-14 h-14 rounded-2xl bg-blue-50 text-[#102a96] flex items-center justify-center mb-6 shadow-inner"><i data-lucide="file-text" class="w-6 h-6"></i></div>
+      <h3 class="text-2xl font-bold mb-6 text-slate-800">รายละเอียดรายการ</h3>
+      <div class="space-y-4 text-sm font-medium text-slate-600">
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>วัน-เวลา:</span> <span id="log-det-date" class="text-slate-800 font-bold"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>สินค้า:</span> <span id="log-det-id" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>ประเภท:</span> <span id="log-det-type" class="text-slate-800 font-bold"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>จำนวน:</span> <span id="log-det-qty" class="text-slate-800 font-bold text-lg"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>ยอดคงเหลือ:</span> <span id="log-det-balance" class="text-slate-800 font-bold text-lg text-blue-600"></span></div>
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>ผู้ทำรายการ:</span> <span id="log-det-user" class="text-slate-800 font-bold"></span></div>
+        <div class="flex justify-between"><span>หมายเหตุ:</span> <span id="log-det-remark" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
   <script>
     // ---------------------------------------------------------------------
-    // นำ URL ของ Web App ใหม่ที่ได้จาก GAS มาวางแทนที่บรรทัดด้านล่างนี้
-    const API_URL = "https://script.google.com/macros/s/AKfycbx61iEAFlQjRlTnum2jYTwUJ7HFruXHBSXl26g0SwQ82WPFAcqF-0j-E_4cp1wFXGrZ/exec"; 
+    // นำ URL ของ Web App ใหม่ที่ได้จาก GAS (New Deployment) มาวางแทนที่ด้านล่างนี้
+    const API_URL = "https://script.google.com/macros/s/AKfycby5irj3T2Tf91Zks5bw87hBsZHSSXDwV0nkEpip6GzC_lnVdB1Q9kxNtVqFEWqu6Fsu/exec; 
     // ---------------------------------------------------------------------
 
-    let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminStockTask = null;
+    let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
+    let cachedLogs = [], lastLogFetchTime = 0;
     const MACHINE_LIST = ["Cylinder 1", "Cylinder 2", "Cylinder 3", "Cylinder 4", "Mini Cylinder Suntech", "Mini Cylinder Tycan", "Flatbase 6090", "Flatbase BL (Tucan)", "UV DTF", "DTF China", "DTF Epson", "DTG", "Mini DTG", "Other"];
 
     function updateLoadingBar(percent, show = true) {
@@ -169,17 +230,7 @@
       });
     }
 
-    function renderMachineMenu() {
-        const menuHTML = MACHINE_LIST.map(m => `
-            <button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-4 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold">
-                <i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span>
-            </button>
-        `).join('');
-        document.getElementById('machine-menu').innerHTML = menuHTML;
-        lucide.createIcons();
-    }
-
-    // ฟังก์ชันฉลาด: เช็คตัวเลขเครื่องให้ตรงกันเพื่อรองรับ "Cylinder 1 / 2 / 4"
+    // ฟังก์ชันฉลาด: เช็คเครื่องจักร รองรับรูปแบบ Cylinder 1 / 2 / 4
     function isMachineMatch(itemMachine, currentView) {
         if (!itemMachine) return false;
         let im = String(itemMachine).toLowerCase();
@@ -194,6 +245,30 @@
             }
         }
         return false;
+    }
+
+    function renderMachineMenu() {
+        const menuHTML = MACHINE_LIST.map(m => `
+            <button onclick="changeView('machine', '${m}'); toggleSidebarMobile(false)" id="nav-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-4 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold">
+                <i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}"></i><span class="truncate font-bold">${m}</span>
+            </button>
+        `).join('');
+        document.getElementById('machine-menu').innerHTML = menuHTML;
+
+        const mListDiv = document.getElementById('machine-checkboxes-list');
+        if (mListDiv) {
+            const checkedMachines = Array.from(document.querySelectorAll('.chk-machine:checked')).map(el => el.value);
+            mListDiv.innerHTML = MACHINE_LIST.map(m => {
+                const isChecked = checkedMachines.includes(m);
+                return `
+                    <label class="flex items-center gap-2 cursor-pointer py-1 px-1.5 hover:bg-slate-50 rounded-lg text-slate-700 font-bold text-left">
+                    <input type="checkbox" value="${m}" ${isChecked ? 'checked' : ''} onchange="onMachineCheckChange()" class="chk-machine rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                    <span class="truncate">${m}</span>
+                    </label>
+                `;
+            }).join('');
+        }
+        lucide.createIcons();
     }
 
     function renderCards(mFilter = null) {
@@ -242,11 +317,11 @@
       } else if (v==='summary') { 
         document.getElementById('summary-view').classList.remove('hidden'); 
         const navObj = document.getElementById('nav-summary'); if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } 
-        document.getElementById('page-title').innerText="Summary Report"; 
+        loadChart(); document.getElementById('page-title').innerText="Summary Report"; 
       } else if (v==='users') { 
         document.getElementById('users-view').classList.remove('hidden'); 
         const navObj = document.getElementById('nav-users'); if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); }
-        document.getElementById('page-title').innerText="User Management"; 
+        loadUserManagement(); document.getElementById('page-title').innerText="User Management"; 
       } else { 
         document.getElementById('inventory-view').classList.remove('hidden'); 
         const navObj = document.getElementById(`nav-${p.replace(/\s/g,'')}`); 
@@ -274,12 +349,15 @@
       if (currentMachine === 'all' && currentModalTask.machines.length > 1) {
           mcSelect.classList.remove('hidden');
           mcDropdown.innerHTML = currentModalTask.machines.map(m => `<option value="${m}">${m}</option>`).join('');
-      } else { mcSelect.classList.add('hidden'); }
+      } else {
+          mcSelect.classList.add('hidden');
+      }
     }
 
     document.getElementById('modal-submit').onclick = async () => {
       const amt = parseFloat(document.getElementById('modal-qty').value);
       if (isNaN(amt) || amt <= 0) { showToast("ระบุจำนวนไม่ถูกต้อง", "error"); return; }
+      
       const { id, type, oldQty, machines } = currentModalTask;
       if (type === 'OUT' && amt > oldQty) { showToast("ยอดคงเหลือไม่พอเบิก!", "error"); return; }
       
@@ -290,16 +368,19 @@
       }
 
       const remark = document.getElementById('modal-remark').value.trim() || "-";
-      closeModal(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+      closeModal();
+      document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
       
       const idx = inventory.findIndex(i => i.id === id);
       if (idx !== -1) { inventory[idx].qty = type === 'IN' ? inventory[idx].qty + amt : inventory[idx].qty - amt; renderCards(currentMachine); }
       
       try {
         const payload = { action: 'update', id: id, amt: amt, type: type, remark: remark, user: localStorage.getItem('ink_current_user'), machine: machineContext };
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500"; showToast(`บันทึกสำเร็จ`, 'success'); init();
-      } catch (e) { showToast("เชื่อมต่อล้มเหลว", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
+        const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
+        showToast(`บันทึก${type==='IN'?'รับเข้า':'เบิกออก'}สำเร็จ`, 'success');
+        lastLogFetchTime = 0; init(); loadNotificationHistory();
+      } catch (e) { showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
     };
 
     function openAdminStockModal(id, qty) { 
@@ -319,34 +400,200 @@
       try { 
         const payload = { action: 'update', id: id, amt: tQty, type: 'EDIT', remark: 'Admin Edit', user: localStorage.getItem('ink_current_user'), machine: 'Admin Dashboard' };
         await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-        document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-green-500"; showToast(`แก้ไขสำเร็จ`, 'success'); init(); 
+        document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-green-500"; 
+        showToast(`แก้ไขยอดเป็น ${tQty} ชิ้น สำเร็จ`, 'success');
+        lastLogFetchTime = 0; init(); loadNotificationHistory();
       } catch(e){ showToast("เกิดข้อผิดพลาด", "error"); }
     };
 
+    // ฟังก์ชันบีบอัดรูปลดขนาดก่อนส่ง
     async function uploadAdminImage() {
-        const fileInput = document.getElementById('admin-image-file'); const file = fileInput.files[0];
+        const fileInput = document.getElementById('admin-image-file');
+        const file = fileInput.files[0];
         if (!file) return showToast("กรุณาเลือกไฟล์ก่อน", "error");
 
         const btn = document.getElementById('btn-upload-img');
-        btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> อัปโหลด...`; btn.disabled = true; lucide.createIcons();
+        btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> กำลังบีบอัดรูป...`; 
+        btn.disabled = true; lucide.createIcons();
 
         const reader = new FileReader();
-        reader.onload = async function() {
-            try {
-                const payload = { action: 'uploadImage', id: currentAdminStockTask.id, base64: reader.result, mimeType: file.type };
-                const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); const res = await resp.json();
-                if(res.success) { showToast("อัปโหลดสำเร็จ!", "success"); closeAdminStockModal(); init(); } else { showToast("ล้มเหลว", "error"); }
-            } catch(e) { showToast("ล้มเหลว", "error"); }
-            btn.innerHTML = `<i data-lucide="image" class="w-4 h-4"></i> อัปโหลดรูป`; btn.disabled = false; lucide.createIcons();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = async function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; const MAX_HEIGHT = 800;
+                let width = img.width; let height = img.height;
+
+                if (width > height) { 
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
+                } else { 
+                    if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } 
+                }
+
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> อัปโหลดลง Drive...`;
+
+                try {
+                    const payload = { action: 'uploadImage', id: currentAdminStockTask.id, base64: compressedBase64, mimeType: 'image/jpeg' };
+                    const resp = await fetch(API_URL, { 
+                        redirect: 'follow',
+                        method: 'POST', 
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify(payload) 
+                    });
+                    
+                    const textResp = await resp.text();
+                    let res;
+                    try { res = JSON.parse(textResp); } catch(err) { throw new Error("API เก่า / เซิร์ฟเวอร์ล้มเหลว"); }
+
+                    if(res.success) { 
+                        showToast("อัปโหลดสำเร็จ!", "success"); closeAdminStockModal(); init(); 
+                    } else { 
+                        showToast("ระบบปฏิเสธ: " + (res.error || "ล้มเหลว"), "error"); 
+                    }
+                } catch(e) { 
+                    showToast("ล้มเหลว: โปรดอัปเดตลิงก์ Web App ใหม่ (New Deployment)", "error"); 
+                }
+                
+                btn.innerHTML = `<i data-lucide="image" class="w-4 h-4"></i> อัปโหลดรูป`; btn.disabled = false; lucide.createIcons();
+            };
+            img.src = event.target.result;
         };
         reader.readAsDataURL(file);
     }
 
+    function loadUserManagement() {
+      document.getElementById('user-management-grid').innerHTML = usersDB.map((u, i) => `
+        <div class="bg-white p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between shadow-sm hover:shadow-md transition-all"><div class="flex justify-between items-start mb-4"><div class="p-3 bg-slate-50 rounded-2xl"><i data-lucide="user" class="w-5 h-5 text-[#001b6e]"></i></div><span class="px-3 py-1 bg-blue-100 text-[#001b6e] text-[9px] font-extrabold rounded-full uppercase italic">${u[2]}</span></div><h4 class="font-bold text-slate-800 text-lg truncate mb-5">${u[0]}</h4><div class="flex items-center justify-end gap-2 border-t pt-4"><button onclick="openAdminUserActionModal(${i})" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase">แก้ไข</button>${u[0]!=='admin' ? `<button onclick="askDelete('${u[0]}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase">ลบ</button>`:''}</div></div>`).join('');
+      lucide.createIcons();
+    }
+
+    function openAdminUserActionModal(idx) {
+      currentAdminUserTask = idx;
+      document.getElementById('admin-action-modal').classList.add('modal-show');
+      document.getElementById('admin-action-title').innerText = idx !== null ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มพนักงานใหม่';
+      document.getElementById('admin-action-user').value = idx !== null ? usersDB[idx][0] : '';
+      document.getElementById('admin-action-pass').value = idx !== null ? usersDB[idx][1] : '';
+      document.getElementById('admin-action-icon').innerHTML = idx !== null ? '<i data-lucide="user-cog" class="w-8 h-8"></i>' : '<i data-lucide="user-plus" class="w-8 h-8"></i>';
+      document.getElementById('admin-action-icon').className = `w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner ${idx !== null ? 'bg-[#001b6e]' : 'bg-green-600'}`;
+      lucide.createIcons();
+    }
+
+    async function manageUserDB(mode, user, pass, old) { await fetch(`${API_URL}?action=manageUser&mode=${mode}&user=${user}&pass=${pass}&oldUser=${old}`); await handleLoginDataFetch(); loadUserManagement(); showToast("บันทึกเรียบร้อย", "success"); }
+    document.getElementById('admin-action-submit').onclick = async () => { const user = document.getElementById('admin-action-user').value.trim(), pass = document.getElementById('admin-action-pass').value.trim(); const mode = currentAdminUserTask !== null ? 'edit' : 'add', old = currentAdminUserTask !== null ? usersDB[currentAdminUserTask][0] : ''; if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง!", "error"); return; } closeAdminActionModal(); showToast("กำลังบันทึก...", "success"); await manageUserDB(mode, user, pass, old); };
+
+    function showLogDetail(date, id, type, qty, user, remark, balance) {
+      document.getElementById('log-det-date').innerText = date;
+      document.getElementById('log-det-id').innerText = id;
+      document.getElementById('log-det-type').innerText = type === 'IN' ? 'รับเข้า (IN)' : type === 'OUT' ? 'เบิกออก (OUT)' : 'แก้ไขสต็อก (EDIT)';
+      document.getElementById('log-det-type').className = type === 'IN' ? 'text-green-600 font-bold' : type === 'OUT' ? 'text-[#0a2384] font-bold' : 'text-orange-500 font-bold';
+      document.getElementById('log-det-qty').innerText = qty + ' ชิ้น';
+      document.getElementById('log-det-balance').innerText = (balance && balance !== 'undefined' && balance !== '-') ? balance + ' ชิ้น' : '-';
+      document.getElementById('log-det-user').innerText = user || '-';
+      document.getElementById('log-det-remark').innerText = remark || '-';
+      document.getElementById('log-detail-modal').classList.add('modal-show');
+    }
+
+    async function loadNotificationHistory() { 
+      try { 
+        const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); 
+        const logs = await resp.json(); 
+        const list = document.getElementById('notification-list'); 
+        if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; return; } 
+        const recent = logs.slice(1).reverse().slice(0, 100); 
+        document.getElementById('bell-badge').classList.remove('hidden'); 
+        
+        list.innerHTML = recent.map(l => {
+          const dt = new Date(l[0]);
+          const timeStr = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()} ${dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}`;
+          const fullDateStr = dt.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+          const safeId = String(l[4]).replace(/'/g, "\\'"); 
+          const safeUser = String(l[7] || '-').replace(/'/g, "\\'"); 
+          const safeRemark = String(l[8] || '-').replace(/'/g, "\\'"); 
+          const safeBalance = String(l[9] || '-').replace(/'/g, "\\'"); 
+          
+          return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${l[5]}', '${l[6]}', '${safeUser}', '${safeRemark}', '${safeBalance}')" class="py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-3 -mx-3 rounded-2xl transition-all"><div class="flex justify-between items-start mb-1.5"><span class="text-[14px] font-bold text-slate-800 pr-2 leading-tight">${l[4]}</span><span class="text-[10px] text-slate-400 font-bold shrink-0 pt-0.5">${timeStr}</span></div><div class="text-[12px] font-bold text-slate-500">${l[5]==='IN'?'รับเข้า':l[5]==='OUT'?'เบิกออก':'แก้ไขเป็น'} <span class="text-slate-800">${l[6]}</span> ชิ้น</div></div>`;
+        }).join(''); 
+      } catch(e){} 
+    }
+
+    async function loadChart() { 
+      if (Date.now() - lastLogFetchTime > 15000) {
+        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+        const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); 
+        cachedLogs = (await resp.json()).slice(1);
+        lastLogFetchTime = Date.now();
+        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
+      }
+
+      const logs = cachedLogs;
+      const startDateInput = document.getElementById('chart-date-start') ? document.getElementById('chart-date-start').value : '';
+      const endDateInput = document.getElementById('chart-date-end') ? document.getElementById('chart-date-end').value : '';
+      const filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value; 
+      
+      const chkAll = document.getElementById('chk-m-all');
+      const allChecked = chkAll ? chkAll.checked : true;
+      const checkedBoxes = Array.from(document.querySelectorAll('.chk-machine:checked')).map(el => el.value);
+      
+      const labelObj = document.getElementById('machine-select-label');
+      if (labelObj) {
+        if (allChecked || checkedBoxes.length === 0) labelObj.innerText = "ทุกเครื่อง";
+        else if (checkedBoxes.length === 1) labelObj.innerText = checkedBoxes[0];
+        else labelObj.innerText = `เลือกแล้ว (${checkedBoxes.length})`;
+      }
+
+      const formatCE = (d) => { const dt = new Date(d); return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`; };
+      
+      let dates = []; 
+      if (startDateInput && endDateInput) {
+        let start = new Date(startDateInput); let end = new Date(endDateInput);
+        if (start > end) { const temp = start; start = end; end = temp; }
+        let current = new Date(start); while (current <= end) { dates.push(formatCE(current)); current.setDate(current.getDate() + 1); }
+      } else if (startDateInput) {
+        let baseDate = new Date(startDateInput); for (let i = 0; i <= 6; i++) { const d = new Date(baseDate); d.setDate(d.getDate() + i); dates.push(formatCE(d)); }
+      } else if (endDateInput) {
+        let baseDate = new Date(endDateInput); for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(formatCE(d)); }
+      } else {
+        let baseDate = new Date(); for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(formatCE(d)); }
+      }
+
+      const filteredInv = allChecked || checkedBoxes.length === 0 ? inventory : inventory.filter(i => checkedBoxes.includes(i.machine)); 
+      const inkTypes = [...new Set(filteredInv.map(i => i.type))]; 
+      
+      const datasets = inkTypes.map(ink => { 
+        const itemInfo = filteredInv.find(inv => inv.type === ink); 
+        return { 
+          label: ink, 
+          data: dates.map(d => logs.filter(l => { 
+            const invItem = inventory.find(inv => inv.id === l[4]); 
+            return formatCE(l[0]) === d && invItem?.type === ink && (allChecked || checkedBoxes.length === 0 || checkedBoxes.includes(invItem?.machine)); 
+          }).reduce((sum, curr) => sum + (curr[5] === 'EDIT' ? 0 : (filter === 'both' ? curr[6] : (curr[5] === filter ? curr[6] : 0))), 0)),
+          borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true 
+        }; 
+      }).filter(ds => ds.data.some(v => v > 0)); 
+      
+      if (chartInstance) chartInstance.destroy(); 
+      chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); 
+    }
+
     async function init() {
       try {
-        const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`); inventory = await resp.json();
-        renderMachineMenu(); renderCards(currentMachine); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0";
+        const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`);
+        inventory = await resp.json();
+        renderMachineMenu();
+        renderCards(currentMachine);
+        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0";
       } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0"; }
+    }
+
+    async function handleLoginDataFetch() {
+        const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); 
+        usersDB = await r.json();
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -354,21 +601,40 @@
       if (localStorage.getItem('ink_logged_in') === 'true') {
         document.getElementById('login-view').classList.remove('active'); document.getElementById('main-view').classList.add('active');
         if (localStorage.getItem('ink_user_role') === 'admin') document.getElementById('nav-users').classList.remove('hidden');
-        init(); setInterval(init, 10000); 
-      } else { document.getElementById('main-view').classList.remove('active'); document.getElementById('login-view').classList.add('active'); }
+        init(); loadNotificationHistory(); setInterval(init, 10000); 
+      } else {
+        document.getElementById('main-view').classList.remove('active'); document.getElementById('login-view').classList.add('active');
+      }
     });
 
     async function handleLogin() {
-      const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim(); updateLoadingBar(30);
-      try { const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); usersDB = await r.json(); updateLoadingBar(80);
+      const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim();
+      updateLoadingBar(30);
+      try {
+        await handleLoginDataFetch(); updateLoadingBar(80);
         const found = usersDB.find(x => x[0] === u && x[1] === p);
-        if (found) { localStorage.setItem('ink_logged_in', 'true'); localStorage.setItem('ink_user_role', found[2]); localStorage.setItem('ink_current_user', u); location.reload(); } else { document.getElementById('login-error').classList.remove('hidden'); updateLoadingBar(0, false); }
+        if (found) {
+            localStorage.setItem('ink_logged_in', 'true'); localStorage.setItem('ink_user_role', found[2]); localStorage.setItem('ink_current_user', u);
+            location.reload();
+        } else { document.getElementById('login-error').classList.remove('hidden'); updateLoadingBar(0, false); }
       } catch(e) { usersDB = [['admin','admin','admin']]; }
     }
+
     function handleLogout() { localStorage.clear(); location.reload(); }
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
+    function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
+    function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
+    function askDelete(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await manageUserDB('delete', u, '', ''); closeConfirm(); }; }
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if(s){sb.classList.replace('sidebar-mobile-hide','sidebar-mobile-show'); ov.classList.remove('hidden');}else{sb.classList.replace('sidebar-mobile-show','sidebar-mobile-hide'); ov.classList.add('hidden');} }
+    function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     function showToast(m, t) { const c = document.getElementById('toast-container'), toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-sm uppercase">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
+
+    document.addEventListener('click', (e) => { 
+      const panel = document.getElementById('notification-panel'), btn = document.getElementById('bell-btn'); 
+      if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) panel.classList.add('hidden'); 
+      const machPanel = document.getElementById('machine-select-dropdown'), machBtn = document.getElementById('machine-select-container');
+      if (machPanel && !machPanel.classList.contains('hidden') && !machPanel.contains(e.target) && !machBtn.contains(e.target)) machPanel.classList.add('hidden');
+    });
   </script>
 </body>
 </html>
