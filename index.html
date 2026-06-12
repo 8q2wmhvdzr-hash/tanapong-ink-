@@ -187,7 +187,9 @@
   </div>
 
   <div id="admin-action-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1600] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div id="admin-action-icon" class="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner font-bold"></div> <h3 id="admin-action-title" class="text-2xl font-bold mb-8 text-slate-800 font-bold"></h3> <div class="space-y-4 mb-8 text-left"> <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Username</label><input type="text" id="admin-action-user" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label><input type="password" id="admin-action-pass" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> </div> <div class="flex gap-4"><button onclick="closeAdminActionModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="admin-action-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div> </div> </div>
-  <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1700] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner font-bold"><i data-lucide="trash-2"></i></div> <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">ยืนยันการลบ?</h3> <p id="confirm-msg" class="text-sm text-slate-400 mb-8 font-medium px-4"></p> <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 shadow-xl transition-all">ลบทิ้ง</button></div> </div> </div>
+  
+  <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[3000] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner font-bold"><i data-lucide="trash-2"></i></div> <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">ยืนยันการลบ?</h3> <p id="confirm-msg" class="text-sm text-slate-400 mb-8 font-medium px-4"></p> <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 shadow-xl transition-all">ลบทิ้ง</button></div> </div> </div>
+  
   <div id="log-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1900] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300 relative text-left">
       <button onclick="document.getElementById('log-detail-modal').classList.remove('modal-show')" class="absolute top-6 right-6 p-2 bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -205,11 +207,11 @@
     </div>
   </div>
 
-  <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3000] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
+  <div id="toast-container" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[3100] flex flex-col gap-3 pointer-events-none w-full max-w-sm px-4"></div>
 
   <script>
     // ---------------------------------------------------------------------
-    // วาง URL ของ Web App ใหม่ (New Deployment)
+    // วาง URL ของ Web App ใหม่ (ที่กด Deploy ด้วย Execute as: Me)
     const API_URL = "https://script.google.com/macros/s/AKfycbybaKKlfT0oGkZDoHB6KyaWwgis-_ytWdCFtkkd9GjlWSLHXW07N6eOgF6AN_EOsBKq/exec"; 
     // ---------------------------------------------------------------------
 
@@ -228,13 +230,36 @@
       document.querySelectorAll('#inventory-view .card').forEach(card => { card.style.display = card.innerText.toLowerCase().includes(term) ? 'flex' : 'none'; });
     }
 
+    // ฟังก์ชันฉลาดขั้นสุด: คัดแยกเครื่อง (แก้ปัญหา DTG ปน Mini DTG 100%)
     function isMachineMatch(itemMachine, currentView) {
         if (!itemMachine) return false;
         let im = String(itemMachine).toLowerCase(); let cv = String(currentView).toLowerCase();
-        if (im.includes(cv)) return true;
-        if (cv.includes('cylinder') && im.includes('cylinder')) {
-            let cvNum = cv.replace(/[^0-9]/g, '');
-            if (cvNum) { let regex = new RegExp('\\b' + cvNum + '\\b'); if (regex.test(im)) return true; }
+        
+        if (im === cv) return true; // ตรงกันเป๊ะๆ ผ่านทันที
+        
+        let machines = im.split(/[/,]/).map(s => s.trim());
+        for (let m of machines) {
+            if (m === cv) return true;
+            
+            // กรณีพิเศษ DTF China/Epson แชร์ Film (Film จะแสดงทั้ง DTF Epson และ DTF China)
+            if (cv === 'dtf epson' && (m === 'epson' || m === 'dtf epson')) return true;
+            if (cv === 'dtf china' && (m === 'china' || m === 'dtf china')) return true;
+            
+            // ป้องกัน DTG ไปดึงของ Mini DTG มาแสดง (ต้องแยกกันเด็ดขาด)
+            if (cv === 'dtg' && m === 'mini dtg') continue;
+            if (cv === 'mini dtg' && m === 'dtg') continue;
+            
+            // กรณี Cylinder 1 / 2 / 4 ดึงตัวเลขมาเช็ค
+            if (cv.includes('cylinder') && !cv.includes('mini')) {
+                let cvNum = cv.replace(/[^0-9]/g, '');
+                if (cvNum && m === cvNum) return true;
+            }
+            
+            // การค้นหาคำทั่วไป โดยมีระบบป้องกันการดึงผิดกลุ่ม
+            if (m.includes(cv) || cv.includes(m)) {
+                if ((cv === 'dtg' && m.includes('mini')) || (m === 'dtg' && cv.includes('mini'))) continue; // กันเหนียว Mini DTG
+                return true;
+            }
         }
         return false;
     }
@@ -249,7 +274,7 @@
         lucide.createIcons();
     }
 
-    // ฟังก์ชันเปิด-ปิด ดูรูปภาพขนาดใหญ่ และลบรูป
+    // ฟังก์ชันเปิด-ปิด ดูรูปภาพขนาดใหญ่ และเรียกลบรูป (Custom UI)
     function viewImage(url, id) {
         document.getElementById('viewer-img').src = url;
         document.getElementById('viewer-title').innerText = id;
@@ -259,7 +284,7 @@
         const delBtn = document.getElementById('btn-delete-img');
         if (isAdmin) {
             delBtn.classList.remove('hidden');
-            delBtn.onclick = () => deleteImage(id);
+            delBtn.onclick = () => askDeleteImage(id);
         } else {
             delBtn.classList.add('hidden');
         }
@@ -267,37 +292,44 @@
 
     function closeImageViewer() { document.getElementById('image-viewer-modal').classList.remove('modal-show'); }
 
-    // ฟังก์ชันลบรูปลง Sheet (เฉพาะ Admin)
-    async function deleteImage(id) {
-        if(!confirm("ยืนยันการลบรูปภาพสินค้านี้?")) return;
-        closeImageViewer();
-        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
-        try {
-            const payload = { action: 'deleteImage', id: id };
-            const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const res = await resp.json();
-            if(res.success) { showToast("ลบรูปภาพสำเร็จ", "success"); init(); } 
-            else { showToast("ลบไม่สำเร็จ", "error"); }
-        } catch(e) { showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
+    // ฟังก์ชันลบรูปแบบสวยงาม (ใช้ Modal สไตล์แอป)
+    function askDeleteImage(id) {
+        closeImageViewer(); // ปิดรูปใหญ่ไปก่อน
+        document.getElementById('confirm-msg').innerText = `ยืนยันการลบรูปภาพสินค้า [ ${id} ] ?`;
+        document.getElementById('confirm-modal').classList.add('modal-show');
+        
+        document.getElementById('confirm-btn').onclick = async () => {
+            closeConfirm();
+            document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+            try {
+                const payload = { action: 'deleteImage', id: id };
+                const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const res = await resp.json();
+                if(res.success) { showToast("ลบรูปภาพสำเร็จ", "success"); init(); } 
+                else { showToast("ลบไม่สำเร็จ", "error"); }
+            } catch(e) { 
+                showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); 
+                document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; 
+            }
+        };
     }
 
-    // อัปเกรดความใหญ่ของรูปในหน้าการ์ด (เปลี่ยนจาก w-10 เป็น w-14)
+    // อัปเกรดขนาดรูปภาพ (w-20 = 80px) ทำให้เห็นรูปชัดเจนขึ้นเยอะมาก!
     function renderCards(mFilter = null) {
       const grid = document.getElementById('inventory-view'); const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
       const data = (mFilter && mFilter !== 'all') ? inventory.filter(i => isMachineMatch(i.machine, mFilter)) : inventory;
       
       grid.innerHTML = data.map(item => {
-        // รูปภาพขยายใหญ่ขึ้น และมีฟังก์ชันกดเพื่อดูรูป (viewImage)
         const imgDisplay = item.img 
-          ? `<img src="${item.img}" onclick="viewImage('${item.img}', '${item.id}')" class="w-14 h-14 rounded-2xl object-cover border-2 border-slate-100 shrink-0 shadow-sm cursor-pointer hover:scale-105 hover:shadow-md transition-all" title="คลิกเพื่อดูรูปขนาดใหญ่">` 
-          : `<div class="w-14 h-14 rounded-2xl border-2 border-slate-100 shrink-0 shadow-sm flex items-center justify-center" style="background-color:${item.hex}"></div>`;
+          ? `<img src="${item.img}" onclick="viewImage('${item.img}', '${item.id}')" class="w-20 h-20 rounded-2xl object-cover border-2 border-slate-100 shrink-0 shadow-sm cursor-pointer hover:scale-105 hover:shadow-md transition-all" title="คลิกเพื่อดูรูปขนาดใหญ่">` 
+          : `<div class="w-20 h-20 rounded-2xl border-2 border-slate-100 shrink-0 shadow-sm flex items-center justify-center" style="background-color:${item.hex}"></div>`;
           
         return `
         <div class="card bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-100 relative flex flex-col justify-between min-h-[240px] z-0 hover:shadow-md transition-all">
           ${item.qty <= item.minStock ? '<div class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-2.5 py-1 rounded-full animate-bounce shadow-md z-10">🚨 LOW STOCK</div>' : ''}
           <div class="w-full">
             <div class="flex justify-between items-start mb-4">
-              <div class="flex items-center gap-3">${imgDisplay}
+              <div class="flex items-center gap-4">${imgDisplay}
               ${isAdmin ? `<button onclick="openAdminStockModal('${item.id}', ${item.qty})" class="p-2 bg-slate-50 text-slate-400 rounded-xl hover:text-blue-900 transition-all shadow-sm"><i data-lucide="edit-3" class="w-4 h-4"></i></button>` : ''}</div>
               <span class="text-[9px] font-extrabold px-2 py-1 bg-slate-100 text-slate-500 rounded-lg uppercase truncate max-w-[120px] text-right" title="${item.machine}">${item.machine.substring(0,20)}${item.machine.length>20?'...':''}</span>
             </div>
@@ -375,7 +407,7 @@
         reader.readAsDataURL(file);
     }
 
-    function loadUserManagement() { document.getElementById('user-management-grid').innerHTML = usersDB.map((u, i) => `<div class="bg-white p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between shadow-sm hover:shadow-md transition-all"><div class="flex justify-between items-start mb-4"><div class="p-3 bg-slate-50 rounded-2xl"><i data-lucide="user" class="w-5 h-5 text-[#001b6e]"></i></div><span class="px-3 py-1 bg-blue-100 text-[#001b6e] text-[9px] font-extrabold rounded-full uppercase italic">${u[2]}</span></div><h4 class="font-bold text-slate-800 text-lg truncate mb-5">${u[0]}</h4><div class="flex items-center justify-end gap-2 border-t pt-4"><button onclick="openAdminUserActionModal(${i})" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase">แก้ไข</button>${u[0]!=='admin' ? `<button onclick="askDelete('${u[0]}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase">ลบ</button>`:''}</div></div>`).join(''); lucide.createIcons(); }
+    function loadUserManagement() { document.getElementById('user-management-grid').innerHTML = usersDB.map((u, i) => `<div class="bg-white p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between shadow-sm hover:shadow-md transition-all"><div class="flex justify-between items-start mb-4"><div class="p-3 bg-slate-50 rounded-2xl"><i data-lucide="user" class="w-5 h-5 text-[#001b6e]"></i></div><span class="px-3 py-1 bg-blue-100 text-[#001b6e] text-[9px] font-extrabold rounded-full uppercase italic">${u[2]}</span></div><h4 class="font-bold text-slate-800 text-lg truncate mb-5">${u[0]}</h4><div class="flex items-center justify-end gap-2 border-t pt-4"><button onclick="openAdminUserActionModal(${i})" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase">แก้ไข</button>${u[0]!=='admin' ? `<button onclick="askDeleteUser('${u[0]}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase">ลบ</button>`:''}</div></div>`).join(''); lucide.createIcons(); }
     function openAdminUserActionModal(idx) { currentAdminUserTask = idx; document.getElementById('admin-action-modal').classList.add('modal-show'); document.getElementById('admin-action-title').innerText = idx !== null ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มพนักงานใหม่'; document.getElementById('admin-action-user').value = idx !== null ? usersDB[idx][0] : ''; document.getElementById('admin-action-pass').value = idx !== null ? usersDB[idx][1] : ''; document.getElementById('admin-action-icon').innerHTML = idx !== null ? '<i data-lucide="user-cog" class="w-8 h-8"></i>' : '<i data-lucide="user-plus" class="w-8 h-8"></i>'; document.getElementById('admin-action-icon').className = `w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner ${idx !== null ? 'bg-[#001b6e]' : 'bg-green-600'}`; lucide.createIcons(); }
     async function manageUserDB(mode, user, pass, old) { await fetch(`${API_URL}?action=manageUser&mode=${mode}&user=${user}&pass=${pass}&oldUser=${old}`); await fetchUsers(); loadUserManagement(); showToast("บันทึกเรียบร้อย", "success"); }
     document.getElementById('admin-action-submit').onclick = async () => { const user = document.getElementById('admin-action-user').value.trim(), pass = document.getElementById('admin-action-pass').value.trim(); const mode = currentAdminUserTask !== null ? 'edit' : 'add', old = currentAdminUserTask !== null ? usersDB[currentAdminUserTask][0] : ''; if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง!", "error"); return; } closeAdminActionModal(); showToast("กำลังบันทึก...", "success"); await manageUserDB(mode, user, pass, old); };
@@ -399,7 +431,7 @@
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
     function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
     function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
-    function askDelete(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); await fetchUsers(); loadUserManagement(); closeConfirm(); showToast("ลบแล้ว","success"); }; }
+    function askDeleteUser(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); await fetchUsers(); loadUserManagement(); closeConfirm(); showToast("ลบแล้ว","success"); }; }
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if(s){sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden');}else{sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden');} }
     function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     function showToast(m, t) { const c = document.getElementById('toast-container'), toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-sm uppercase">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
