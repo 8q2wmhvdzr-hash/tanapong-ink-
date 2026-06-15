@@ -132,6 +132,7 @@
     </div>
   </div>
 
+  <!-- MODAL กดดูรูปขนาดใหญ่ และ ปุ่มลบรูป -->
   <div id="image-viewer-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all z-[2500] p-6 text-center">
     <button onclick="closeImageViewer()" class="absolute top-6 right-6 p-3 bg-white/10 text-white rounded-full hover:bg-white/30 transition-all"><i data-lucide="x" class="w-6 h-6"></i></button>
     <img id="viewer-img" src="" class="max-w-full max-h-[70vh] rounded-2xl shadow-2xl mb-6 object-contain">
@@ -139,6 +140,7 @@
     <button id="btn-delete-img" class="hidden px-6 py-3 bg-red-600 text-white font-bold rounded-2xl shadow-lg hover:bg-red-700 flex items-center gap-2 transition-all active:scale-95"><i data-lucide="trash-2" class="w-5 h-5"></i> ลบรูปภาพนี้</button>
   </div>
 
+  <!-- MODAL เบิกออก/รับเข้า -->
   <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1500] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3.5rem] shadow-2xl p-8 scale-95 transition-transform duration-300">
       <h3 id="modal-title" class="text-2xl font-bold mb-1 text-slate-800"></h3>
@@ -161,6 +163,7 @@
     </div>
   </div>
 
+  <!-- MODAL จัดการสต็อก (ADMIN) & อัปโหลดรูป -->
   <div id="admin-stock-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1800] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-2 text-slate-800">แก้ไขข้อมูลสต็อก</h3>
@@ -187,9 +190,7 @@
   </div>
 
   <div id="admin-action-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1600] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div id="admin-action-icon" class="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner font-bold"></div> <h3 id="admin-action-title" class="text-2xl font-bold mb-8 text-slate-800 font-bold"></h3> <div class="space-y-4 mb-8 text-left"> <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Username</label><input type="text" id="admin-action-user" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label><input type="password" id="admin-action-pass" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> </div> <div class="flex gap-4"><button onclick="closeAdminActionModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="admin-action-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div> </div> </div>
-  
   <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[3000] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner font-bold"><i data-lucide="trash-2"></i></div> <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">ยืนยันการลบ?</h3> <p id="confirm-msg" class="text-sm text-slate-400 mb-8 font-medium px-4"></p> <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 shadow-xl transition-all">ลบทิ้ง</button></div> </div> </div>
-  
   <div id="log-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1900] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300 relative text-left">
       <button onclick="document.getElementById('log-detail-modal').classList.remove('modal-show')" class="absolute top-6 right-6 p-2 bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -211,13 +212,13 @@
 
   <script>
     // ---------------------------------------------------------------------
-    // วาง URL ของ Web App ใหม่ (ที่กด Deploy ด้วย Execute as: Me)
+    // วาง URL ของ Web App ตรงนี้ครับ
     const API_URL = "https://script.google.com/macros/s/AKfycbxWSDm6tpyUk-zlXvxMQsyBPgIF3lj4sd_0B8pTgJdRSN3d81WHptuUpaBjweW2fk6n/exec"; 
     // ---------------------------------------------------------------------
 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
     let cachedLogs = [], lastLogFetchTime = 0;
-    const MACHINE_LIST = ["Cylinder 1", "Cylinder 2", "Cylinder 3", "Cylinder 4", "Mini Cylinder Suntech", "Mini Cylinder Tucan", "Flatbase 6090", "Flatbase BL Tucan", "UV DTF", "DTF China", "DTF Epson", "DTG", "Mini DTG", "Other"];
+    const MACHINE_LIST = ["Cylinder 1", "Cylinder 2", "Cylinder 3", "Cylinder 4", "Mini Cylinder Suntech", "Mini Cylinder Tycan", "Flatbase 6090", "Flatbase BL (Tucan)", "UV DTF", "DTF China", "DTF Epson", "DTG", "Mini DTG", "Other"];
 
     function updateLoadingBar(percent, show = true) {
       const bar = document.getElementById('top-loading-bar');
@@ -230,34 +231,23 @@
       document.querySelectorAll('#inventory-view .card').forEach(card => { card.style.display = card.innerText.toLowerCase().includes(term) ? 'flex' : 'none'; });
     }
 
-    // ฟังก์ชันฉลาดขั้นสุด: คัดแยกเครื่อง (แก้ปัญหา DTG ปน Mini DTG 100%)
     function isMachineMatch(itemMachine, currentView) {
         if (!itemMachine) return false;
         let im = String(itemMachine).toLowerCase(); let cv = String(currentView).toLowerCase();
-        
-        if (im === cv) return true; // ตรงกันเป๊ะๆ ผ่านทันที
-        
+        if (im === cv) return true;
         let machines = im.split(/[/,]/).map(s => s.trim());
         for (let m of machines) {
             if (m === cv) return true;
-            
-            // กรณีพิเศษ DTF China/Epson แชร์ Film (Film จะแสดงทั้ง DTF Epson และ DTF China)
             if (cv === 'dtf epson' && (m === 'epson' || m === 'dtf epson')) return true;
             if (cv === 'dtf china' && (m === 'china' || m === 'dtf china')) return true;
-            
-            // ป้องกัน DTG ไปดึงของ Mini DTG มาแสดง (ต้องแยกกันเด็ดขาด)
             if (cv === 'dtg' && m === 'mini dtg') continue;
             if (cv === 'mini dtg' && m === 'dtg') continue;
-            
-            // กรณี Cylinder 1 / 2 / 4 ดึงตัวเลขมาเช็ค
             if (cv.includes('cylinder') && !cv.includes('mini')) {
                 let cvNum = cv.replace(/[^0-9]/g, '');
                 if (cvNum && m === cvNum) return true;
             }
-            
-            // การค้นหาคำทั่วไป โดยมีระบบป้องกันการดึงผิดกลุ่ม
             if (m.includes(cv) || cv.includes(m)) {
-                if ((cv === 'dtg' && m.includes('mini')) || (m === 'dtg' && cv.includes('mini'))) continue; // กันเหนียว Mini DTG
+                if ((cv === 'dtg' && m.includes('mini')) || (m === 'dtg' && cv.includes('mini'))) continue;
                 return true;
             }
         }
@@ -274,47 +264,55 @@
         lucide.createIcons();
     }
 
-    // ฟังก์ชันเปิด-ปิด ดูรูปภาพขนาดใหญ่ และเรียกลบรูป (Custom UI)
-    function viewImage(url, id) {
-        document.getElementById('viewer-img').src = url;
-        document.getElementById('viewer-title').innerText = id;
-        document.getElementById('image-viewer-modal').classList.add('modal-show');
-        
-        const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
-        const delBtn = document.getElementById('btn-delete-img');
-        if (isAdmin) {
-            delBtn.classList.remove('hidden');
-            delBtn.onclick = () => askDeleteImage(id);
-        } else {
-            delBtn.classList.add('hidden');
+    // ฟังก์ชันวาดโครงกระดูกตอนโหลดข้อมูล (Ghost UI)
+    function renderSkeleton() {
+        const grid = document.getElementById('inventory-view');
+        let skeletons = '';
+        for(let i=0; i<8; i++) {
+            skeletons += `
+            <div class="card bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between min-h-[240px] animate-pulse">
+                <div class="w-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-20 h-20 bg-slate-200 rounded-2xl"></div>
+                        <div class="w-20 h-5 bg-slate-200 rounded-lg"></div>
+                    </div>
+                    <div class="w-3/4 h-6 bg-slate-200 rounded-lg mb-2"></div>
+                    <div class="w-1/2 h-4 bg-slate-200 rounded-lg mb-4"></div>
+                </div>
+                <div class="w-full">
+                    <div class="flex justify-between mb-2">
+                        <div class="w-10 h-4 bg-slate-200 rounded"></div>
+                        <div class="w-6 h-4 bg-slate-200 rounded"></div>
+                    </div>
+                    <div class="w-full bg-slate-200 h-1.5 rounded-full mb-5"></div>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div class="h-10 bg-slate-200 rounded-xl"></div>
+                        <div class="h-10 bg-slate-200 rounded-xl"></div>
+                    </div>
+                </div>
+            </div>`;
         }
+        grid.innerHTML = skeletons;
     }
 
+    function viewImage(url, id) {
+        document.getElementById('viewer-img').src = url; document.getElementById('viewer-title').innerText = id; document.getElementById('image-viewer-modal').classList.add('modal-show');
+        const isAdmin = localStorage.getItem('ink_user_role') === 'admin'; const delBtn = document.getElementById('btn-delete-img');
+        if (isAdmin) { delBtn.classList.remove('hidden'); delBtn.onclick = () => askDeleteImage(id); } else { delBtn.classList.add('hidden'); }
+    }
     function closeImageViewer() { document.getElementById('image-viewer-modal').classList.remove('modal-show'); }
-
-    // ฟังก์ชันลบรูปแบบสวยงาม (ใช้ Modal สไตล์แอป)
     function askDeleteImage(id) {
-        closeImageViewer(); // ปิดรูปใหญ่ไปก่อน
-        document.getElementById('confirm-msg').innerText = `ยืนยันการลบรูปภาพสินค้า [ ${id} ] ?`;
-        document.getElementById('confirm-modal').classList.add('modal-show');
-        
+        closeImageViewer(); document.getElementById('confirm-msg').innerText = `ยืนยันการลบรูปภาพสินค้า [ ${id} ] ?`; document.getElementById('confirm-modal').classList.add('modal-show');
         document.getElementById('confirm-btn').onclick = async () => {
-            closeConfirm();
-            document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+            closeConfirm(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
             try {
                 const payload = { action: 'deleteImage', id: id };
-                const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const res = await resp.json();
-                if(res.success) { showToast("ลบรูปภาพสำเร็จ", "success"); init(); } 
-                else { showToast("ลบไม่สำเร็จ", "error"); }
-            } catch(e) { 
-                showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); 
-                document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; 
-            }
+                const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); const res = await resp.json();
+                if(res.success) { showToast("ลบรูปภาพสำเร็จ", "success"); init(); } else { showToast("ลบไม่สำเร็จ", "error"); }
+            } catch(e) { showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
         };
     }
 
-    // อัปเกรดขนาดรูปภาพ (w-20 = 80px) ทำให้เห็นรูปชัดเจนขึ้นเยอะมาก!
     function renderCards(mFilter = null) {
       const grid = document.getElementById('inventory-view'); const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
       const data = (mFilter && mFilter !== 'all') ? inventory.filter(i => isMachineMatch(i.machine, mFilter)) : inventory;
@@ -323,7 +321,6 @@
         const imgDisplay = item.img 
           ? `<img src="${item.img}" onclick="viewImage('${item.img}', '${item.id}')" class="w-20 h-20 rounded-2xl object-cover border-2 border-slate-100 shrink-0 shadow-sm cursor-pointer hover:scale-105 hover:shadow-md transition-all" title="คลิกเพื่อดูรูปขนาดใหญ่">` 
           : `<div class="w-20 h-20 rounded-2xl border-2 border-slate-100 shrink-0 shadow-sm flex items-center justify-center" style="background-color:${item.hex}"></div>`;
-          
         return `
         <div class="card bg-white p-5 rounded-[2.5rem] shadow-sm border border-slate-100 relative flex flex-col justify-between min-h-[240px] z-0 hover:shadow-md transition-all">
           ${item.qty <= item.minStock ? '<div class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold px-2.5 py-1 rounded-full animate-bounce shadow-md z-10">🚨 LOW STOCK</div>' : ''}
@@ -348,11 +345,38 @@
     }
 
     function changeView(v, p=null) { 
-      currentMachine = p || 'all'; document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('sidebar-active'); b.classList.add('opacity-75'); }); document.getElementById('inventory-view').classList.add('hidden'); document.getElementById('summary-view').classList.add('hidden'); document.getElementById('users-view').classList.add('hidden'); 
-      if (v==='all') { document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById('nav-all').classList.add('sidebar-active'); document.getElementById('nav-all').classList.remove('opacity-75'); renderCards(); document.getElementById('page-title').innerText="All Items"; 
-      } else if (v==='summary') { document.getElementById('summary-view').classList.remove('hidden'); const navObj = document.getElementById('nav-summary'); if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } loadChart(); document.getElementById('page-title').innerText="Summary Report"; 
-      } else if (v==='users') { document.getElementById('users-view').classList.remove('hidden'); const navObj = document.getElementById('nav-users'); if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } loadUserManagement(); document.getElementById('page-title').innerText="User Management"; 
-      } else { document.getElementById('inventory-view').classList.remove('hidden'); const navObj = document.getElementById(`nav-${p.replace(/\s/g,'')}`); if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } renderCards(p); document.getElementById('page-title').innerText=p; } 
+      // 💾 ระบบจดจำหน้าเว็บ: บันทึกหน้าที่กำลังดูลง LocalStorage
+      localStorage.setItem('ink_current_view', v);
+      if(p) localStorage.setItem('ink_current_machine', p);
+      else localStorage.removeItem('ink_current_machine');
+
+      currentMachine = p || 'all'; 
+      document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('sidebar-active'); b.classList.add('opacity-75'); }); 
+      document.getElementById('inventory-view').classList.add('hidden'); 
+      document.getElementById('summary-view').classList.add('hidden'); 
+      document.getElementById('users-view').classList.add('hidden'); 
+
+      if (v==='all') { 
+        document.getElementById('inventory-view').classList.remove('hidden'); 
+        document.getElementById('nav-all').classList.add('sidebar-active'); 
+        document.getElementById('nav-all').classList.remove('opacity-75'); 
+        renderCards(); document.getElementById('page-title').innerText="All Items"; 
+      } else if (v==='summary') { 
+        document.getElementById('summary-view').classList.remove('hidden'); 
+        const navObj = document.getElementById('nav-summary'); 
+        if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } 
+        loadChart(); document.getElementById('page-title').innerText="Summary Report"; 
+      } else if (v==='users') { 
+        document.getElementById('users-view').classList.remove('hidden'); 
+        const navObj = document.getElementById('nav-users'); 
+        if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } 
+        loadUserManagement(); document.getElementById('page-title').innerText="User Management"; 
+      } else { 
+        document.getElementById('inventory-view').classList.remove('hidden'); 
+        const navObj = document.getElementById(`nav-${p.replace(/\s/g,'')}`); 
+        if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } 
+        renderCards(p); document.getElementById('page-title').innerText=p; 
+      } 
     }
 
     function openModal(id, type, qty) {
@@ -423,7 +447,25 @@
       if (chartInstance) chartInstance.destroy(); chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); 
     }
     async function fetchUsers() { try { const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); usersDB = await r.json(); } catch(e) { usersDB = [['admin','admin','admin']]; } }
-    async function init() { try { const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`); inventory = await resp.json(); renderMachineMenu(); renderCards(currentMachine); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0"; } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0"; } }
+    
+    async function init() { 
+      try { 
+        // 💾 โหลด Skeleton UI เฉพาะตอนเปิดเว็บครั้งแรกที่ยังไม่มีข้อมูล
+        if(inventory.length === 0) renderSkeleton();
+
+        const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`); 
+        inventory = await resp.json(); 
+        
+        renderMachineMenu(); 
+
+        // 💾 ระบบจดจำหน้าเว็บ: ดึงค่าหน้าล่าสุดจาก LocalStorage มาแสดงผล (ถ้าไม่มีให้ไปหน้า all)
+        const savedView = localStorage.getItem('ink_current_view') || 'all';
+        const savedMachine = localStorage.getItem('ink_current_machine') || null;
+        changeView(savedView, savedMachine);
+
+        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0"; 
+      } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0"; } 
+    }
 
     window.addEventListener('DOMContentLoaded', async () => { lucide.createIcons(); const isLogged = localStorage.getItem('ink_logged_in') === 'true'; const savedUser = localStorage.getItem('ink_current_user'); const savedRole = localStorage.getItem('ink_user_role'); if (isLogged && savedUser) { document.getElementById('login-view').classList.remove('active'); document.getElementById('main-view').classList.add('active'); if (savedRole === 'admin') document.getElementById('nav-users').classList.remove('hidden'); init(); loadNotificationHistory(); setInterval(init, 10000); } else { localStorage.clear(); document.getElementById('main-view').classList.remove('active'); document.getElementById('login-view').classList.add('active'); } });
     async function handleLogin() { const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn-action'); btn.innerText = "กำลังตรวจสอบ..."; btn.disabled = true; updateLoadingBar(30); await fetchUsers(); updateLoadingBar(80); const found = usersDB.find(x => x[0] === u && x[1] === p); if (found) { localStorage.setItem('ink_logged_in', 'true'); localStorage.setItem('ink_user_role', found[2]); localStorage.setItem('ink_current_user', u); location.reload(); } else { document.getElementById('login-error').classList.remove('hidden'); btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; updateLoadingBar(0, false); } }
