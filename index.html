@@ -9,6 +9,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
   <style>
     body { font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #f1f5f9; }
     .sidebar-active { background: rgba(255,255,255,0.15); border-left: 4px solid #fff; opacity: 1 !important; }
@@ -60,7 +65,6 @@
 
     <div class="flex-1 flex flex-col min-w-0">
       
-      <!-- Header และ Search Box -->
       <header class="bg-white p-4 md:px-6 md:py-4 shadow-sm flex items-center justify-between sticky top-0 z-50">
         <h2 id="page-title" class="text-lg md:text-xl font-bold uppercase truncate w-1/4 hidden md:block text-slate-800">All Items</h2>
         
@@ -72,8 +76,11 @@
           </div>
         </div>
 
-        <div class="flex items-center justify-end gap-4 w-auto md:w-1/4 relative font-bold">
+        <div class="flex items-center justify-end gap-3 w-auto md:w-1/4 relative font-bold">
           <div id="status-dot" class="w-3 h-3 rounded-full bg-slate-300 shadow-sm border border-slate-100"></div>
+          
+          <button onclick="forceSync()" class="relative p-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full border border-blue-100 outline-none transition-colors" title="ซิงค์ข้อมูลจาก Sheet"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
+
           <div class="static md:relative inline-block">
             <button id="bell-btn" onclick="toggleNotification()" class="relative p-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full border border-slate-100 outline-none transition-colors"><i data-lucide="bell" class="w-5 h-5"></i><span id="bell-badge" class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full hidden"></span></button>
             <div id="notification-panel" class="fixed md:absolute top-16 md:top-auto right-4 left-4 md:right-0 md:left-auto md:mt-3 md:w-96 bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-5 hidden z-[100] max-h-[70vh] overflow-y-auto">
@@ -86,10 +93,8 @@
 
       <div class="p-4 md:p-8 flex-1 min-w-0">
         
-        <!-- การ์ดสินค้า -->
         <div id="inventory-view" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 font-bold"></div>
         
-        <!-- หน้าจอ ไม่พบข้อมูล (Empty State) -->
         <div id="empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center w-full">
            <div class="w-28 h-28 bg-white rounded-full flex items-center justify-center mb-6 border-[6px] border-slate-50 shadow-sm"><i data-lucide="package-open" class="w-12 h-12 text-slate-300"></i></div>
            <h3 class="text-2xl font-black text-slate-700">ไม่พบสินค้าที่คุณค้นหา</h3>
@@ -221,12 +226,26 @@
 
   <script>
     // ---------------------------------------------------------------------
-    // วาง URL ของ Web App ตรงนี้ครับ 
+    // 1. นำลิงก์ Web App API ของ Google Sheet วางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbyKg7QqchNMOJPfGeL3zBx643Ge5RTmkpudVCd9U8rqgGpLtBZalTvnZk9t5519lUMR/exec"; 
+
+    // 2. การเชื่อมต่อ Firebase ความเร็วแสง
+    const firebaseConfig = {
+      apiKey: "AIzaSyAhpNP5CJSQfiu4iqxdwp7gOIJMcSQne1o",
+      authDomain: "inkpro-91b8e.firebaseapp.com",
+      databaseURL: "https://inkpro-91b8e-default-rtdb.firebaseio.com",
+      projectId: "inkpro-91b8e",
+      storageBucket: "inkpro-91b8e.firebasestorage.app",
+      messagingSenderId: "581268772855",
+      appId: "1:581268772855:web:c8f80b2953ffbbb02480f2",
+      measurementId: "G-TSBE02R7P1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
     // ---------------------------------------------------------------------
 
     let inventory = [], usersDB = [], currentMode = 'ALL', currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
-    let cachedLogs = [], lastLogFetchTime = 0;
+    let cachedLogs = [];
     const MACHINE_LIST = ["Cylinder 1", "Cylinder 2", "Cylinder 3", "Cylinder 4", "Cylinder 5", "Mini Cylinder Suntech", "Mini Cylinder Tucan", "Flatbase 6090", "Flatbase BL (Tucan)", "UV DTF", "DTF China", "DTF Epson", "DTG", "Mini DTG", "Other"];
 
     function updateLoadingBar(percent, show = true) {
@@ -238,37 +257,23 @@
     function filter() {
       const term = document.getElementById('search').value.toLowerCase();
       const clearBtn = document.getElementById('clear-search');
-      
       if(term.length > 0) clearBtn.classList.remove('hidden'); 
       else clearBtn.classList.add('hidden');
 
       let found = false;
       document.querySelectorAll('#inventory-view .card').forEach(card => { 
-        if(card.innerText.toLowerCase().includes(term)) {
-            card.style.display = 'flex';
-            found = true;
-        } else {
-            card.style.display = 'none';
-        }
+        if(card.innerText.toLowerCase().includes(term)) { card.style.display = 'flex'; found = true; } 
+        else { card.style.display = 'none'; }
       });
 
       const emptyState = document.getElementById('empty-state');
       const invView = document.getElementById('inventory-view');
       
-      if(!found && term !== '' && inventory.length > 0) {
-          emptyState.classList.remove('hidden');
-          invView.classList.add('hidden');
-      } else {
-          emptyState.classList.add('hidden');
-          invView.classList.remove('hidden');
-      }
+      if(!found && term !== '' && inventory.length > 0) { emptyState.classList.remove('hidden'); invView.classList.add('hidden'); } 
+      else { emptyState.classList.add('hidden'); invView.classList.remove('hidden'); }
     }
 
-    function clearSearch() {
-      document.getElementById('search').value = '';
-      filter();
-      document.getElementById('search').focus(); 
-    }
+    function clearSearch() { document.getElementById('search').value = ''; filter(); document.getElementById('search').focus(); }
 
     function isMachineMatch(itemMachine, currentView) {
         if (!itemMachine) return false;
@@ -281,14 +286,8 @@
             if (cv === 'dtf china' && (m === 'china' || m === 'dtf china')) return true;
             if (cv === 'dtg' && m === 'mini dtg') continue;
             if (cv === 'mini dtg' && m === 'dtg') continue;
-            if (cv.includes('cylinder') && !cv.includes('mini')) {
-                let cvNum = cv.replace(/[^0-9]/g, '');
-                if (cvNum && m === cvNum) return true;
-            }
-            if (m.includes(cv) || cv.includes(m)) {
-                if ((cv === 'dtg' && m.includes('mini')) || (m === 'dtg' && cv.includes('mini'))) continue;
-                return true;
-            }
+            if (cv.includes('cylinder') && !cv.includes('mini')) { let cvNum = cv.replace(/[^0-9]/g, ''); if (cvNum && m === cvNum) return true; }
+            if (m.includes(cv) || cv.includes(m)) { if ((cv === 'dtg' && m.includes('mini')) || (m === 'dtg' && cv.includes('mini'))) continue; return true; }
         }
         return false;
     }
@@ -306,14 +305,11 @@
                     <i data-lucide="layout-grid" class="w-5 h-5"></i> เช็คสต็อกรวม
                 </button>
             </div>
-
             <div class="pt-6 pb-2 px-4 text-[10px] font-extrabold text-blue-300 uppercase tracking-widest border-t border-white/5 mt-4 mb-2">ทำรายการ (Transactions)</div>
-            
             <div class="space-y-1">
                 <button onclick="changeMode('IN', 'all');" id="nav-IN-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-75 font-bold text-green-400">
                     <i data-lucide="download" class="w-5 h-5"></i> รับเข้า (IN)
                 </button>
-
                 <div class="w-full">
                     <button onclick="document.getElementById('out-submenu').classList.toggle('hidden');" class="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition opacity-75 font-bold text-amber-400">
                         <div class="flex items-center gap-3"><i data-lucide="upload" class="w-5 h-5"></i> จ่ายออก (OUT)</div>
@@ -323,12 +319,10 @@
                         ${outMachines}
                     </div>
                 </div>
-
                 <button onclick="changeMode('SELL', 'all');" id="nav-SELL-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-75 font-bold text-blue-400">
                     <i data-lucide="shopping-cart" class="w-5 h-5"></i> ขาย (SELL)
                 </button>
             </div>
-
             <div class="pt-6 pb-2 px-4 text-[10px] font-extrabold text-blue-300 uppercase tracking-widest border-t border-white/5 mt-4 mb-2">ระบบและรายงาน</div>
             <div class="space-y-1">
                 <button onclick="changeMode('SUMMARY', 'all');" id="nav-SUMMARY-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-75 font-bold text-white">
@@ -377,9 +371,10 @@
         closeImageViewer(); document.getElementById('confirm-msg').innerText = `ยืนยันการลบรูปภาพสินค้า [ ${id} ] ?`; document.getElementById('confirm-modal').classList.add('modal-show');
         document.getElementById('confirm-btn').onclick = async () => {
             closeConfirm(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
-            try { const payload = { action: 'deleteImage', id: id }; const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); const res = await resp.json();
-                if(res.success) { showToast("ลบรูปภาพสำเร็จ", "success"); init(); } else { showToast("ลบไม่สำเร็จ", "error"); }
-            } catch(e) { showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
+            const idx = inventory.findIndex(i => i.id === id);
+            if (idx !== -1) { inventory[idx].img = ''; db.ref('inventory').set(inventory); }
+            try { const payload = { action: 'deleteImage', id: id }; fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); showToast("ลบรูปภาพสำเร็จ", "success"); } 
+            catch(e) { showToast("เกิดข้อผิดพลาด", "error"); }
         };
     }
 
@@ -388,9 +383,17 @@
         document.getElementById('confirm-msg').innerText = `ลบประวัติของ [ ${id} ] ? (ระบบจะคืนยอดให้)`; document.getElementById('confirm-modal').classList.add('modal-show');
         document.getElementById('confirm-btn').onclick = async () => {
             closeConfirm(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
-            try { const payload = { action: 'deleteLog', id: id, type: type, qty: qty }; const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); const res = await resp.json();
-                if(res.success) { showToast("ลบประวัติและตีคืนยอดแล้ว", "success"); lastLogFetchTime = 0; init(); loadNotificationHistory(); } else { showToast("ไม่พบรายการนี้", "error"); init(); }
-            } catch(e) { showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
+            const idx = inventory.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                if(type === 'IN') inventory[idx].qty -= parseFloat(qty);
+                else if(type === 'OUT' || type === 'SELL') inventory[idx].qty += parseFloat(qty);
+                db.ref('inventory').set(inventory);
+            }
+            try { 
+                const payload = { action: 'deleteLog', id: id, type: type, qty: qty }; 
+                fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => forceSyncLogs());
+                showToast("ลบประวัติและตีคืนยอดแล้ว", "success"); 
+            } catch(e) { showToast("เกิดข้อผิดพลาด", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
         };
     }
 
@@ -503,9 +506,18 @@
       else if (type === 'OUT') machineContext = currentMachine; 
       
       closeModal(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
-      const idx = inventory.findIndex(i => i.id === id); if (idx !== -1) { inventory[idx].qty = type === 'IN' ? inventory[idx].qty + amt : inventory[idx].qty - amt; renderCards(); }
       
-      try { const payload = { action: 'update', id: id, amt: amt, type: type, remark: remark, user: localStorage.getItem('ink_current_user'), machine: machineContext }; await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500"; showToast(`บันทึกสำเร็จ`, 'success'); lastLogFetchTime = 0; init(); loadNotificationHistory(); } catch (e) { showToast("เชื่อมต่อขัดข้อง", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
+      const idx = inventory.findIndex(i => i.id === id); 
+      if (idx !== -1) { 
+          inventory[idx].qty = type === 'IN' ? inventory[idx].qty + amt : inventory[idx].qty - amt; 
+          db.ref('inventory').set(inventory); 
+      }
+      
+      try { 
+          const payload = { action: 'update', id: id, amt: amt, type: type, remark: remark, user: localStorage.getItem('ink_current_user'), machine: machineContext }; 
+          fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => forceSyncLogs()); 
+          showToast(`บันทึกสำเร็จ`, 'success'); 
+      } catch (e) { showToast("อัปเดตลง Sheet ไม่สำเร็จ", "error"); }
     };
 
     function openAdminStockModal(id, qty) { currentAdminStockTask={id,qty}; document.getElementById('admin-stock-modal').classList.add('modal-show'); document.getElementById('admin-stock-sub').innerText = id; document.getElementById('admin-stock-qty').value = qty; document.getElementById('admin-image-file').value = ""; }
@@ -514,8 +526,16 @@
     document.getElementById('admin-stock-submit').onclick = async () => {
       const tQty = parseFloat(document.getElementById('admin-stock-qty').value); if(isNaN(tQty)||tQty<0) return;
       const {id,qty} = currentAdminStockTask; if(tQty===qty){ closeAdminStockModal(); return; }
+      
       closeAdminStockModal(); document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-orange-500 animate-spin";
-      try { const payload = { action: 'update', id: id, amt: tQty, type: 'EDIT', remark: 'Admin Edit', user: localStorage.getItem('ink_current_user'), machine: 'Admin Dashboard' }; await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); document.getElementById('status-dot').className="w-3 h-3 rounded-full bg-green-500"; showToast(`แก้ไขยอดสำเร็จ`, 'success'); lastLogFetchTime = 0; init(); loadNotificationHistory(); } catch(e){ showToast("เกิดข้อผิดพลาด", "error"); }
+      const idx = inventory.findIndex(i => i.id === currentAdminStockTask.id);
+      if (idx !== -1) { inventory[idx].qty = tQty; db.ref('inventory').set(inventory); }
+
+      try { 
+          const payload = { action: 'update', id: currentAdminStockTask.id, amt: tQty, type: 'EDIT', remark: 'Admin Edit', user: localStorage.getItem('ink_current_user'), machine: 'Admin Dashboard' }; 
+          fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => forceSyncLogs());
+          showToast(`แก้ไขยอดสำเร็จ`, 'success'); 
+      } catch(e){ showToast("เกิดข้อผิดพลาด", "error"); }
     };
 
     async function uploadAdminImage() {
@@ -534,7 +554,7 @@
                     const payload = { action: 'uploadImage', id: currentAdminStockTask.id, base64: compressedBase64, mimeType: 'image/jpeg' };
                     const resp = await fetch(API_URL, { redirect: 'follow', method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
                     const textResp = await resp.text(); let res; try { res = JSON.parse(textResp); } catch(err) { throw new Error("Permission Error"); }
-                    if(res.success) { showToast("อัปโหลดสำเร็จ!", "success"); closeAdminStockModal(); init(); } else { showToast("ล้มเหลว", "error"); }
+                    if(res.success) { showToast("อัปโหลดสำเร็จ!", "success"); closeAdminStockModal(); forceSync(); } else { showToast("ล้มเหลว", "error"); }
                 } catch(e) { showToast("ล้มเหลว: ตรวจสอบลิงก์ API", "error"); }
                 btn.innerHTML = `<i data-lucide="image" class="w-4 h-4"></i> อัปโหลดรูป`; btn.disabled = false; lucide.createIcons();
             };
@@ -545,62 +565,131 @@
 
     function loadUserManagement() { document.getElementById('user-management-grid').innerHTML = usersDB.map((u, i) => `<div class="bg-white p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between shadow-sm hover:shadow-md transition-all"><div class="flex justify-between items-start mb-4"><div class="p-3 bg-slate-50 rounded-2xl"><i data-lucide="user" class="w-5 h-5 text-[#001b6e]"></i></div><span class="px-3 py-1 bg-blue-100 text-[#001b6e] text-[9px] font-extrabold rounded-full uppercase italic">${u[2]}</span></div><h4 class="font-bold text-slate-800 text-lg truncate mb-5">${u[0]}</h4><div class="flex items-center justify-end gap-2 border-t pt-4"><button onclick="openAdminUserActionModal(${i})" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase">แก้ไข</button>${u[0]!=='admin' ? `<button onclick="askDeleteUser('${u[0]}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase">ลบ</button>`:''}</div></div>`).join(''); lucide.createIcons(); }
     function openAdminUserActionModal(idx) { currentAdminUserTask = idx; document.getElementById('admin-action-modal').classList.add('modal-show'); document.getElementById('admin-action-title').innerText = idx !== null ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มพนักงานใหม่'; document.getElementById('admin-action-user').value = idx !== null ? usersDB[idx][0] : ''; document.getElementById('admin-action-pass').value = idx !== null ? usersDB[idx][1] : ''; document.getElementById('admin-action-icon').innerHTML = idx !== null ? '<i data-lucide="user-cog" class="w-8 h-8"></i>' : '<i data-lucide="user-plus" class="w-8 h-8"></i>'; document.getElementById('admin-action-icon').className = `w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner ${idx !== null ? 'bg-[#001b6e]' : 'bg-green-600'}`; lucide.createIcons(); }
-    async function manageUserDB(mode, user, pass, old) { await fetch(`${API_URL}?action=manageUser&mode=${mode}&user=${user}&pass=${pass}&oldUser=${old}`); await fetchUsers(); loadUserManagement(); showToast("บันทึกเรียบร้อย", "success"); }
+    
+    async function manageUserDB(mode, user, pass, old) { 
+        await fetch(`${API_URL}?action=manageUser&mode=${mode}&user=${user}&pass=${pass}&oldUser=${old}`); 
+        const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); usersDB = await r.json(); db.ref('users').set(usersDB);
+        loadUserManagement(); showToast("บันทึกเรียบร้อย", "success"); 
+    }
+    
     document.getElementById('admin-action-submit').onclick = async () => { const user = document.getElementById('admin-action-user').value.trim(), pass = document.getElementById('admin-action-pass').value.trim(); const mode = currentAdminUserTask !== null ? 'edit' : 'add', old = currentAdminUserTask !== null ? usersDB[currentAdminUserTask][0] : ''; if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง!", "error"); return; } closeAdminActionModal(); showToast("กำลังบันทึก...", "success"); await manageUserDB(mode, user, pass, old); };
 
     function showLogDetail(date, id, type, qty, user, remark) { 
-      document.getElementById('log-det-date').innerText = date; document.getElementById('log-det-id').innerText = id; 
+      document.getElementById('log-det-date').innerText = date; 
+      document.getElementById('log-det-id').innerText = id; 
       let tDisplay = type === 'IN' ? 'รับเข้า (IN)' : type === 'OUT' ? 'จ่ายออก (OUT)' : type === 'SELL' ? 'ขาย (SELL)' : 'แก้ไขสต็อก (EDIT)';
-      document.getElementById('log-det-type').innerText = tDisplay; document.getElementById('log-det-type').className = type === 'IN' ? 'text-green-600 font-bold' : type === 'SELL' ? 'text-blue-600 font-bold' : type === 'OUT' ? 'text-amber-500 font-bold' : 'text-orange-500 font-bold'; 
-      document.getElementById('log-det-qty').innerText = qty + ' ชิ้น'; document.getElementById('log-det-user').innerText = user || '-'; document.getElementById('log-det-remark').innerText = remark || '-'; document.getElementById('log-detail-modal').classList.add('modal-show'); 
+      document.getElementById('log-det-type').innerText = tDisplay; 
+      document.getElementById('log-det-type').className = type === 'IN' ? 'text-green-600 font-bold' : type === 'SELL' ? 'text-blue-600 font-bold' : type === 'OUT' ? 'text-amber-500 font-bold' : 'text-orange-500 font-bold'; 
+      document.getElementById('log-det-qty').innerText = qty + ' ชิ้น'; 
+      document.getElementById('log-det-user').innerText = user || '-'; 
+      document.getElementById('log-det-remark').innerText = remark || '-'; 
+      document.getElementById('log-detail-modal').classList.add('modal-show'); 
       document.getElementById('btn-delete-log').onclick = () => askDeleteLog(id, type, qty);
     }
 
-    async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 100); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => { const dt = new Date(l[0]); const timeStr = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()} ${dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}`; const fullDateStr = dt.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); const safeId = String(l[4] || l[1]).replace(/'/g, "\\'"); const safeUser = String(l[7] || l[4] || '-').replace(/'/g, "\\'"); const safeRemark = String(l[8] || l[5] || '-').replace(/'/g, "\\'"); 
-      let tShow = (l[5] || l[2])==='IN'?'รับเข้า':(l[5] || l[2])==='OUT'?'จ่ายออก':(l[5] || l[2])==='SELL'?'ขาย':'แก้ไขเป็น';
-      return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${l[5] || l[2]}', '${l[6] || l[3]}', '${safeUser}', '${safeRemark}')" class="py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-3 -mx-3 rounded-2xl transition-all"><div class="flex justify-between items-start mb-1.5"><span class="text-[14px] font-bold text-slate-800 pr-2 leading-tight">${safeId}</span><span class="text-[10px] text-slate-400 font-bold shrink-0 pt-0.5">${timeStr}</span></div><div class="text-[12px] font-bold text-slate-500">${tShow} <span class="text-slate-800">${l[6] || l[3]}</span> ชิ้น</div></div>`; }).join(''); } catch(e){} }
+    // 🌟 3. ระบบ Smart Log Parser: อ่านประวัติได้ถูกต้อง 100% แม้คอลัมน์ใน Sheet จะสลับกัน
+    function renderLogsList(logs) {
+        const list = document.getElementById('notification-list'); 
+        if (!logs || logs.length === 0) { list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; return; } 
+        const recent = logs.slice().reverse().slice(0, 100); 
+        document.getElementById('bell-badge').classList.remove('hidden'); 
+        list.innerHTML = recent.map(l => { 
+            const dt = new Date(l[0]); 
+            const timeVal = l[1] instanceof Date ? l[1] : new Date(l[1]);
+            const timeStr = !isNaN(timeVal) ? timeVal.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : String(l[1]).substring(0,5); 
+            const fullDateStr = !isNaN(dt) ? dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + timeStr : l[0]; 
+            
+            // ค้นหาช่องอัตโนมัติจากค่าคงที่
+            let tIdx = l.findIndex(v => ['IN', 'OUT', 'SELL', 'EDIT'].includes(String(v).trim().toUpperCase()));
+            let tShowRaw = tIdx !== -1 ? String(l[tIdx]).trim().toUpperCase() : 'UNKNOWN';
+            
+            let safeId = tIdx > 0 ? String(l[tIdx - 1] || '-').replace(/'/g, "\\'") : String(l[4] || '-').replace(/'/g, "\\'");
+            let safeQty = tIdx !== -1 ? String(l[tIdx + 1] || '0') : String(l[6] || '0');
+            let safeUser = tIdx !== -1 ? String(l[tIdx + 2] || '-').replace(/'/g, "\\'") : String(l[7] || '-').replace(/'/g, "\\'");
+            let safeRemark = tIdx !== -1 ? String(l[tIdx + 3] || '-').replace(/'/g, "\\'") : String(l[8] || '-').replace(/'/g, "\\'");
+
+            let tShow = tShowRaw==='IN'?'รับเข้า':tShowRaw==='OUT'?'จ่ายออก':tShowRaw==='SELL'?'ขาย':tShowRaw==='EDIT'?'แก้ไขเป็น':tShowRaw;
+            
+            return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${tShowRaw}', '${safeQty}', '${safeUser}', '${safeRemark}')" class="py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-3 -mx-3 rounded-2xl transition-all"><div class="flex justify-between items-start mb-1.5"><span class="text-[14px] font-bold text-slate-800 pr-2 leading-tight">${safeId}</span><span class="text-[10px] text-slate-400 font-bold shrink-0 pt-0.5">${timeStr}</span></div><div class="text-[12px] font-bold text-slate-500">${tShow} <span class="text-slate-800">${safeQty}</span> ชิ้น</div></div>`; 
+        }).join('');
+    }
+
+    async function loadNotificationHistory() { 
+        db.ref('logs').on('value', async (snapshot) => {
+            if (snapshot.exists()) { cachedLogs = snapshot.val(); renderLogsList(cachedLogs); } 
+            else { forceSyncLogs(); }
+        });
+    }
+
+    async function forceSyncLogs() {
+        const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`);
+        cachedLogs = (await resp.json()).slice(1);
+        db.ref('logs').set(cachedLogs);
+    }
+
     async function loadChart() { 
-      if (Date.now() - lastLogFetchTime > 15000) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin"; const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); cachedLogs = (await resp.json()).slice(1); lastLogFetchTime = Date.now(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500"; }
       const logs = cachedLogs; const startDateInput = document.getElementById('chart-date-start') ? document.getElementById('chart-date-start').value : ''; const endDateInput = document.getElementById('chart-date-end') ? document.getElementById('chart-date-end').value : ''; const filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value; const chkAll = document.getElementById('chk-m-all'); const allChecked = chkAll ? chkAll.checked : true; const checkedBoxes = Array.from(document.querySelectorAll('.chk-machine:checked')).map(el => el.value); const labelObj = document.getElementById('machine-select-label'); if (labelObj) { if (allChecked || checkedBoxes.length === 0) labelObj.innerText = "ทุกเครื่อง"; else if (checkedBoxes.length === 1) labelObj.innerText = checkedBoxes[0]; else labelObj.innerText = `เลือกแล้ว (${checkedBoxes.length})`; }
       const formatCE = (d) => { const dt = new Date(d); return `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()}`; }; let dates = []; if (startDateInput && endDateInput) { let start = new Date(startDateInput); let end = new Date(endDateInput); if (start > end) { const temp = start; start = end; end = temp; } let current = new Date(start); while (current <= end) { dates.push(formatCE(current)); current.setDate(current.getDate() + 1); } } else if (startDateInput) { let baseDate = new Date(startDateInput); for (let i = 0; i <= 6; i++) { const d = new Date(baseDate); d.setDate(d.getDate() + i); dates.push(formatCE(d)); } } else if (endDateInput) { let baseDate = new Date(endDateInput); for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(formatCE(d)); } } else { let baseDate = new Date(); for (let i = 6; i >= 0; i--) { const d = new Date(baseDate); d.setDate(d.getDate() - i); dates.push(formatCE(d)); } }
       const filteredInv = allChecked || checkedBoxes.length === 0 ? inventory : inventory.filter(i => checkedBoxes.includes(i.machine)); const inkTypes = [...new Set(filteredInv.map(i => i.type))]; 
-      const datasets = inkTypes.map(ink => { const itemInfo = filteredInv.find(inv => inv.type === ink); return { label: ink, data: dates.map(d => logs.filter(l => { const invItem = inventory.find(inv => inv.id === (l[4] || l[1])); const typeStatus = l[5] || l[2]; const qtyNum = l[6] || l[3]; return formatCE(l[0]) === d && invItem?.type === ink && (allChecked || checkedBoxes.length === 0 || checkedBoxes.includes(invItem?.machine)); }).reduce((sum, curr) => { const typeStatus = curr[5] || curr[2]; const qtyNum = curr[6] || curr[3]; return sum + (typeStatus === 'EDIT' ? 0 : (filter === 'both' ? qtyNum : (typeStatus === filter ? qtyNum : 0))); }, 0)), borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true }; }).filter(ds => ds.data.some(v => v > 0)); 
+      const datasets = inkTypes.map(ink => { const itemInfo = filteredInv.find(inv => inv.type === ink); return { label: ink, data: dates.map(d => logs.filter(l => { let tIdx = l.findIndex(v => ['IN', 'OUT', 'SELL', 'EDIT'].includes(String(v).trim().toUpperCase())); let lId = tIdx > 0 ? String(l[tIdx - 1]) : String(l[4]); const invItem = inventory.find(inv => inv.id === lId); return formatCE(l[0]) === d && invItem?.type === ink && (allChecked || checkedBoxes.length === 0 || checkedBoxes.includes(invItem?.machine)); }).reduce((sum, curr) => { let tIdx = curr.findIndex(v => ['IN', 'OUT', 'SELL', 'EDIT'].includes(String(v).trim().toUpperCase())); let typeStatus = tIdx !== -1 ? String(curr[tIdx]).trim().toUpperCase() : ''; let qtyNum = tIdx !== -1 ? parseFloat(curr[tIdx + 1]) || 0 : parseFloat(curr[6]) || 0; return sum + (typeStatus === 'EDIT' ? 0 : (filter === 'both' ? qtyNum : (typeStatus === filter ? qtyNum : 0))); }, 0)), borderColor: itemInfo ? itemInfo.hex : '#cbd5e1', backgroundColor: (itemInfo ? itemInfo.hex : '#cbd5e1')+'20', tension: 0.4, fill: true }; }).filter(ds => ds.data.some(v => v > 0)); 
       if (chartInstance) chartInstance.destroy(); chartInstance = new Chart(document.getElementById('mainChart'), { type: cType, data: { labels: dates, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); 
     }
-    async function fetchUsers() { try { const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); usersDB = await r.json(); } catch(e) { usersDB = [['admin','admin','admin']]; } }
     
-    // โหลดครั้งแรกตอนเข้าเว็บ
+    async function fetchUsers() { 
+        return new Promise((resolve) => {
+            db.ref('users').once('value', async (snapshot) => {
+                if (snapshot.exists()) { usersDB = snapshot.val(); resolve(); } 
+                else {
+                    try { const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); usersDB = await r.json(); db.ref('users').set(usersDB); } 
+                    catch(e) { usersDB = [['admin','admin','admin']]; }
+                    resolve();
+                }
+            });
+        });
+    }
+    
+    async function forceSync() {
+        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+        try {
+            const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`); const freshInv = await resp.json(); await db.ref('inventory').set(freshInv);
+            const respLogs = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const freshLogs = (await respLogs.json()).slice(1); await db.ref('logs').set(freshLogs);
+            const respUsers = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); const freshUsers = await respUsers.json(); await db.ref('users').set(freshUsers);
+            document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0";
+            showToast("ดึงข้อมูลจากชีทล่าสุดแล้ว", "success");
+        } catch(e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0"; showToast("ซิงค์ล้มเหลว", "error"); }
+    }
+
     async function init() { 
       try { 
         if(inventory.length === 0) renderSkeleton();
-        const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`); 
-        inventory = await resp.json(); 
         
-        renderMachineMenu(); 
-        const savedMode = localStorage.getItem('ink_current_mode') || 'ALL';
-        const savedMachine = localStorage.getItem('ink_current_machine') || 'all';
-        changeMode(savedMode, savedMachine);
-
-        document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0"; 
+        db.ref('inventory').on('value', async (snapshot) => {
+            if (snapshot.exists()) {
+                inventory = snapshot.val();
+                renderMachineMenu(); 
+                const savedMode = localStorage.getItem('ink_current_mode') || 'ALL';
+                const savedMachine = localStorage.getItem('ink_current_machine') || 'all';
+                changeMode(savedMode, savedMachine);
+                document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0"; 
+            } else {
+                const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`); 
+                inventory = await resp.json(); 
+                db.ref('inventory').set(inventory);
+            }
+        });
       } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0"; } 
     }
 
-    // ลบการอ้างอิงถึงเมนูเก่าทิ้งให้หมดอย่างปลอดภัย
     window.addEventListener('DOMContentLoaded', async () => { 
       lucide.createIcons(); 
       const isLogged = localStorage.getItem('ink_logged_in') === 'true'; 
       const savedUser = localStorage.getItem('ink_current_user'); 
-      
       if (isLogged && savedUser) { 
         document.getElementById('login-view').classList.remove('active'); 
         document.getElementById('main-view').classList.add('active'); 
-        init(); 
-        loadNotificationHistory(); 
-        setInterval(init, 10000); 
+        init(); loadNotificationHistory(); 
       } else { 
-        localStorage.clear(); 
-        document.getElementById('main-view').classList.remove('active'); 
-        document.getElementById('login-view').classList.add('active'); 
+        localStorage.clear(); document.getElementById('main-view').classList.remove('active'); document.getElementById('login-view').classList.add('active'); 
       } 
     });
 
