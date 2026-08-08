@@ -78,9 +78,7 @@
 
         <div class="flex items-center justify-end gap-3 w-auto md:w-1/4 relative font-bold">
           <div id="status-dot" class="w-3 h-3 rounded-full bg-slate-300 shadow-sm border border-slate-100"></div>
-          
           <button onclick="forceSync()" class="relative p-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full border border-blue-100 outline-none transition-colors" title="ซิงค์ข้อมูลจาก Sheet"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
-
           <div class="static md:relative inline-block">
             <button id="bell-btn" onclick="toggleNotification()" class="relative p-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-full border border-slate-100 outline-none transition-colors"><i data-lucide="bell" class="w-5 h-5"></i><span id="bell-badge" class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full hidden"></span></button>
             <div id="notification-panel" class="fixed md:absolute top-16 md:top-auto right-4 left-4 md:right-0 md:left-auto md:mt-3 md:w-96 bg-white rounded-[2rem] shadow-2xl border border-slate-100 p-5 hidden z-[100] max-h-[70vh] overflow-y-auto">
@@ -165,6 +163,11 @@
       <h3 id="modal-title" class="text-2xl font-bold mb-1 text-slate-800"></h3>
       <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase break-all font-bold tracking-widest"></p>
       
+      <div id="modal-machine-select" class="mb-4 text-left hidden">
+        <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1">โปรดระบุเครื่องที่เบิก</label>
+        <select id="modal-machine-dropdown" class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-bold text-slate-700"></select>
+      </div>
+
       <div class="mb-4 text-left">
         <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1">ระบุจำนวนสินค้า</label>
         <input type="number" id="modal-qty" min="1" onkeypress="if(event.key==='-'||event.key==='e') return false; if(event.key==='Enter') document.getElementById('modal-submit').click()" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all">
@@ -480,7 +483,10 @@
     }
 
     function openModal(id, type, qty) {
-      const item = inventory.find(i => i.id === id); currentModalTask = { id, type, oldQty: qty };
+      const item = inventory.find(i => i.id === id); 
+      // 🌟 ดึงชื่อเครื่องจากไอเทมโดยตรง สำหรับรับเข้า (IN)
+      currentModalTask = { id, type, oldQty: qty, itemMachine: item.machine }; 
+      
       document.getElementById('modal').classList.add('modal-show'); 
       
       let title = '';
@@ -501,7 +507,8 @@
       if (type === 'SELL' && remark === "-") { showToast("กรุณาระบุชื่อลูกค้าหรือเลข SO", "error"); return; }
 
       let machineContext = ''; 
-      if (type === 'IN') machineContext = 'คลังกลาง'; 
+      // 🌟 รับเข้า (IN) ใช้ชื่อเครื่องที่มีอยู่แล้ว โยนลงประวัติเลย ไม่ต้องเป็นคำว่าคลังกลาง
+      if (type === 'IN') machineContext = currentModalTask.itemMachine; 
       else if (type === 'SELL') machineContext = 'ขาย (SELL)'; 
       else if (type === 'OUT') machineContext = currentMachine; 
       
@@ -587,22 +594,25 @@
       document.getElementById('btn-delete-log').onclick = () => askDeleteLog(id, type, qty);
     }
 
-    // 🌟 3. ระบบ Smart Log Parser: อ่านประวัติได้ถูกต้อง 100% แม้คอลัมน์ใน Sheet จะสลับกัน
+    // 🌟 ระบบอ่านประวัติแบบเจาะจงคอลัมน์ ป้องกันการอ่านสลับเวลาพิมพ์มือผิด
     function renderLogsList(logs) {
         const list = document.getElementById('notification-list'); 
         if (!logs || logs.length === 0) { list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; return; } 
         const recent = logs.slice().reverse().slice(0, 100); 
         document.getElementById('bell-badge').classList.remove('hidden'); 
         list.innerHTML = recent.map(l => { 
+            
+            // อ่านค่าเวลาและวันที่ให้ถูกต้องเสมอ 
             const dt = new Date(l[0]); 
             const timeVal = l[1] instanceof Date ? l[1] : new Date(l[1]);
             const timeStr = !isNaN(timeVal) ? timeVal.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : String(l[1]).substring(0,5); 
             const fullDateStr = !isNaN(dt) ? dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + timeStr : l[0]; 
             
-            // ค้นหาช่องอัตโนมัติจากค่าคงที่
+            // ใช้ระบบ Smart Parser ค้นหาช่อง IN/OUT/SELL เพื่อดึงข้อมูลอื่นๆ รอบตัวให้ตรงเป๊ะ
             let tIdx = l.findIndex(v => ['IN', 'OUT', 'SELL', 'EDIT'].includes(String(v).trim().toUpperCase()));
             let tShowRaw = tIdx !== -1 ? String(l[tIdx]).trim().toUpperCase() : 'UNKNOWN';
             
+            // ดึงค่าซ้ายขวาอิงจากช่องประเภทการทำรายการ (กันการกรอกมือแล้วสลับคอลัมน์กัน)
             let safeId = tIdx > 0 ? String(l[tIdx - 1] || '-').replace(/'/g, "\\'") : String(l[4] || '-').replace(/'/g, "\\'");
             let safeQty = tIdx !== -1 ? String(l[tIdx + 1] || '0') : String(l[6] || '0');
             let safeUser = tIdx !== -1 ? String(l[tIdx + 2] || '-').replace(/'/g, "\\'") : String(l[7] || '-').replace(/'/g, "\\'");
