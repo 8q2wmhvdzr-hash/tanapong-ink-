@@ -52,9 +52,7 @@
 
     <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-[#001b6e] text-white flex flex-col shadow-2xl z-[1002] transition-transform duration-300 sidebar-mobile-hide md:translate-x-0 md:sticky md:top-0 md:h-screen shrink-0 overflow-hidden">
       <div class="p-6 border-b border-white/10 text-center hidden md:block"><img src="logo.png" alt="Logo" class="h-16 mx-auto mb-3 object-contain bg-white rounded-xl p-2"><h1 class="text-2xl font-bold tracking-tighter uppercase italic">Ink System</h1></div>
-      
       <nav id="dynamic-sidebar-menu" class="flex-1 p-4 space-y-1 overflow-y-auto font-bold custom-scrollbar"></nav>
-      
       <div class="p-4 border-t border-white/10"><button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-600/20 hover:bg-red-600 transition text-sm font-bold text-white"><i data-lucide="log-out" class="w-4 h-4"></i> ออกจากระบบ</button></div>
     </aside>
 
@@ -62,11 +60,10 @@
 
     <div class="flex-1 flex flex-col min-w-0">
       
-      <!-- อัปเกรด Header และ Search Box ใหม่ทั้งหมด -->
+      <!-- Header และ Search Box -->
       <header class="bg-white p-4 md:px-6 md:py-4 shadow-sm flex items-center justify-between sticky top-0 z-50">
         <h2 id="page-title" class="text-lg md:text-xl font-bold uppercase truncate w-1/4 hidden md:block text-slate-800">All Items</h2>
         
-        <!-- ช่องค้นหาแบบใหม่ตรงกลาง ยืดหดได้ -->
         <div class="flex-1 flex justify-center px-2 md:px-4">
           <div class="relative group w-full max-w-[220px] md:max-w-xs transition-all duration-300 focus-within:max-w-[280px] md:focus-within:max-w-md">
             <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#102a96] transition-colors"></i>
@@ -100,7 +97,6 @@
            <button onclick="clearSearch()" class="mt-6 px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full text-sm font-bold transition-colors">ล้างคำค้นหา</button>
         </div>
 
-        <!-- หน้าสรุปและรายงาน -->
         <div id="summary-view" class="hidden space-y-6">
           <div class="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
             <div class="flex flex-wrap justify-between items-center mb-8 gap-4 font-bold">
@@ -239,12 +235,10 @@
       if (percent >= 100) setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => { bar.style.width = '0%'; }, 300); }, 500);
     }
 
-    // ฟังก์ชันค้นหา พร้อมควบคุมปุ่มล้าง (Clear) และ Empty State
     function filter() {
       const term = document.getElementById('search').value.toLowerCase();
       const clearBtn = document.getElementById('clear-search');
       
-      // แสดงปุ่ม X หากมีการพิมพ์
       if(term.length > 0) clearBtn.classList.remove('hidden'); 
       else clearBtn.classList.add('hidden');
 
@@ -258,7 +252,6 @@
         }
       });
 
-      // ควบคุมการแสดงหน้า Empty State
       const emptyState = document.getElementById('empty-state');
       const invView = document.getElementById('inventory-view');
       
@@ -274,7 +267,7 @@
     function clearSearch() {
       document.getElementById('search').value = '';
       filter();
-      document.getElementById('search').focus(); // ให้เคอร์เซอร์กลับไปที่กล่องค้นหา
+      document.getElementById('search').focus(); 
     }
 
     function isMachineMatch(itemMachine, currentView) {
@@ -445,7 +438,7 @@
         </div>`
       }).join('');
       lucide.createIcons();
-      filter(); // เรียกใช้ฟิลเตอร์ทุกครั้งที่จัดกล่องใหม่ เผื่อมีคำค้นหาค้างอยู่
+      filter(); 
     }
 
     function changeMode(mode, machine) { 
@@ -463,7 +456,7 @@
       document.getElementById('inventory-view').classList.add('hidden'); 
       document.getElementById('summary-view').classList.add('hidden'); 
       document.getElementById('users-view').classList.add('hidden'); 
-      document.getElementById('empty-state').classList.add('hidden'); // ปิดสถานะว่างก่อนเสมอ
+      document.getElementById('empty-state').classList.add('hidden');
 
       if (mode === 'SUMMARY') { 
         document.getElementById('summary-view').classList.remove('hidden'); 
@@ -576,6 +569,7 @@
     }
     async function fetchUsers() { try { const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); usersDB = await r.json(); } catch(e) { usersDB = [['admin','admin','admin']]; } }
     
+    // โหลดครั้งแรกตอนเข้าเว็บ
     async function init() { 
       try { 
         if(inventory.length === 0) renderSkeleton();
@@ -591,13 +585,30 @@
       } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0"; } 
     }
 
-    window.addEventListener('DOMContentLoaded', async () => { lucide.createIcons(); const isLogged = localStorage.getItem('ink_logged_in') === 'true'; const savedUser = localStorage.getItem('ink_current_user'); const savedRole = localStorage.getItem('ink_user_role'); if (isLogged && savedUser) { document.getElementById('login-view').classList.remove('active'); document.getElementById('main-view').classList.add('active'); if (savedRole === 'admin') document.getElementById('nav-users').classList.remove('hidden'); init(); loadNotificationHistory(); setInterval(init, 10000); } else { localStorage.clear(); document.getElementById('main-view').classList.remove('active'); document.getElementById('login-view').classList.add('active'); } });
+    // ลบการอ้างอิงถึงเมนูเก่าทิ้งให้หมดอย่างปลอดภัย
+    window.addEventListener('DOMContentLoaded', async () => { 
+      lucide.createIcons(); 
+      const isLogged = localStorage.getItem('ink_logged_in') === 'true'; 
+      const savedUser = localStorage.getItem('ink_current_user'); 
+      
+      if (isLogged && savedUser) { 
+        document.getElementById('login-view').classList.remove('active'); 
+        document.getElementById('main-view').classList.add('active'); 
+        init(); 
+        loadNotificationHistory(); 
+        setInterval(init, 10000); 
+      } else { 
+        localStorage.clear(); 
+        document.getElementById('main-view').classList.remove('active'); 
+        document.getElementById('login-view').classList.add('active'); 
+      } 
+    });
+
     async function handleLogin() { const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn-action'); btn.innerText = "กำลังตรวจสอบ..."; btn.disabled = true; updateLoadingBar(30); await fetchUsers(); updateLoadingBar(80); const found = usersDB.find(x => x[0] === u && x[1] === p); if (found) { localStorage.setItem('ink_logged_in', 'true'); localStorage.setItem('ink_user_role', found[2]); localStorage.setItem('ink_current_user', u); location.reload(); } else { document.getElementById('login-error').classList.remove('hidden'); btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; updateLoadingBar(0, false); } }
     function handleLogout() { localStorage.clear(); location.reload(); }
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
     function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
     function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
-    function askDeleteUser(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); await fetchUsers(); loadUserManagement(); closeConfirm(); showToast("ลบแล้ว","success"); }; }
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if(s){sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden');}else{sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden');} }
     function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     function showToast(m, t) { const c = document.getElementById('toast-container'), toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-sm uppercase">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
