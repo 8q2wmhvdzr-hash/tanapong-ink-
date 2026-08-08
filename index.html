@@ -20,7 +20,6 @@
     #login-view.active { display: flex; background-color: #001b6e; }
     #main-view.active { display: flex; background-color: #f1f5f9; }
     @media (max-width: 767px) { #main-view.active { display: block; } }
-    @media print { aside, header, .nav-btn, #toast-container { display: none !important; } .p-8 { padding: 0 !important; } }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
   </style>
 </head>
@@ -129,6 +128,7 @@
     </div>
   </div>
 
+  <!-- MODAL กดดูรูปขนาดใหญ่ และ ปุ่มลบรูป -->
   <div id="image-viewer-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all z-[2500] p-6 text-center">
     <button onclick="closeImageViewer()" class="absolute top-6 right-6 p-3 bg-white/10 text-white rounded-full hover:bg-white/30 transition-all"><i data-lucide="x" class="w-6 h-6"></i></button>
     <img id="viewer-img" src="" class="max-w-full max-h-[70vh] rounded-2xl shadow-2xl mb-6 object-contain">
@@ -136,7 +136,7 @@
     <button id="btn-delete-img" class="hidden px-6 py-3 bg-red-600 text-white font-bold rounded-2xl shadow-lg hover:bg-red-700 flex items-center gap-2 transition-all active:scale-95"><i data-lucide="trash-2" class="w-5 h-5"></i> ลบรูปภาพนี้</button>
   </div>
 
-  <!-- MODAL ทำรายการ (ถูกลบช่องเลือกเครื่องทิ้งแล้ว) -->
+  <!-- MODAL ทำรายการ -->
   <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1500] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3.5rem] shadow-2xl p-8 scale-95 transition-transform duration-300">
       <h3 id="modal-title" class="text-2xl font-bold mb-1 text-slate-800"></h3>
@@ -203,7 +203,7 @@
 
   <script>
     // ---------------------------------------------------------------------
-    // วาง URL ของ Web App ตรงนี้ครับ (อย่าลืมกด Deploy -> New deployment ก่อน)
+    // วาง URL ของ Web App ตรงนี้ครับ (อย่าลืม Deploy ให้เรียบร้อย)
     const API_URL = "https://script.google.com/macros/s/AKfycbyXljIwvPLCMuz5cf7VsGWDAaSAsln4C7O6QGOCCpUAnpAZ4_dd7q_jIJuViIbYXDGI/exec"; 
     // ---------------------------------------------------------------------
 
@@ -294,6 +294,12 @@
         `;
         document.getElementById('dynamic-sidebar-menu').innerHTML = menuHTML;
         lucide.createIcons();
+        
+        // เช็คสิทธิ์ Admin ว่าจะโชว์เมนูจัดการผู้ใช้งานไหม
+        if (localStorage.getItem('ink_user_role') === 'admin') {
+            const adminBtn = document.getElementById('nav-USERS-all');
+            if(adminBtn) adminBtn.classList.remove('hidden');
+        }
     }
 
     function renderSkeleton() {
@@ -346,7 +352,9 @@
     // วาดการ์ดสินค้าแบบใหม่ (ไม่มีแถบสี, ตัวเลขใหญ่, ปุ่มโชว์ตามหมวด)
     function renderCards() {
       const grid = document.getElementById('inventory-view'); const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
-      const data = (currentMachine && currentMachine !== 'all') ? inventory.filter(i => isMachineMatch(i.machine, currentMachine)) : inventory;
+      
+      // กรองข้อมูล: ถ้ารับเข้า(IN) หรือ ขาย(SELL) ให้โชว์ทั้งหมด, ถ้าจ่ายออก(OUT) ให้โชว์ตามเครื่องที่เลือก
+      const data = (currentMachine && currentMachine !== 'all' && currentMode === 'OUT') ? inventory.filter(i => isMachineMatch(i.machine, currentMachine)) : inventory;
       
       grid.innerHTML = data.map(item => {
         const imgDisplay = item.img 
@@ -360,6 +368,9 @@
             actionBtn = `<button onclick="openModal('${item.id}', 'OUT', ${item.qty})" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl text-sm font-bold active:scale-95 transition-all shadow-md mt-4 flex items-center justify-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i> จ่ายออกเบิกใช้</button>`;
         } else if (currentMode === 'SELL') {
             actionBtn = `<button onclick="openModal('${item.id}', 'SELL', ${item.qty})" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-sm font-bold active:scale-95 transition-all shadow-md mt-4 flex items-center justify-center gap-2"><i data-lucide="shopping-cart" class="w-4 h-4"></i> ขายให้ลูกค้า</button>`;
+        } else {
+            // โหมด ALL โชว์ปุ่มดูรายละเอียด (ไม่มีแอคชัน)
+            actionBtn = `<div class="w-full py-3.5 bg-slate-100 text-slate-400 rounded-2xl text-sm font-bold mt-4 flex items-center justify-center gap-2">ดูรายละเอียดได้ที่เมนูทำรายการ</div>`;
         }
 
         return `
@@ -446,7 +457,7 @@
       let machineContext = ''; 
       if (type === 'IN') machineContext = 'คลังกลาง'; 
       else if (type === 'SELL') machineContext = 'ขาย (SELL)'; 
-      else if (type === 'OUT') machineContext = currentMachine; // จำเครื่องจาก Sidebar อัตโนมัติ!
+      else if (type === 'OUT') machineContext = currentMachine; 
       
       closeModal(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
       const idx = inventory.findIndex(i => i.id === id); if (idx !== -1) { inventory[idx].qty = type === 'IN' ? inventory[idx].qty + amt : inventory[idx].qty - amt; renderCards(); }
@@ -530,13 +541,12 @@
       } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0"; } 
     }
 
-    window.addEventListener('DOMContentLoaded', async () => { lucide.createIcons(); const isLogged = localStorage.getItem('ink_logged_in') === 'true'; const savedUser = localStorage.getItem('ink_current_user'); const savedRole = localStorage.getItem('ink_user_role'); if (isLogged && savedUser) { document.getElementById('login-view').classList.remove('active'); document.getElementById('main-view').classList.add('active'); if (savedRole === 'admin') document.getElementById('nav-users').classList.remove('hidden'); init(); loadNotificationHistory(); setInterval(init, 10000); } else { localStorage.clear(); document.getElementById('main-view').classList.remove('active'); document.getElementById('login-view').classList.add('active'); } });
+    window.addEventListener('DOMContentLoaded', async () => { lucide.createIcons(); const isLogged = localStorage.getItem('ink_logged_in') === 'true'; const savedUser = localStorage.getItem('ink_current_user'); const savedRole = localStorage.getItem('ink_user_role'); if (isLogged && savedUser) { document.getElementById('login-view').classList.remove('active'); document.getElementById('main-view').classList.add('active'); init(); loadNotificationHistory(); setInterval(init, 10000); } else { localStorage.clear(); document.getElementById('main-view').classList.remove('active'); document.getElementById('login-view').classList.add('active'); } });
     async function handleLogin() { const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim(); const btn = document.getElementById('login-btn-action'); btn.innerText = "กำลังตรวจสอบ..."; btn.disabled = true; updateLoadingBar(30); await fetchUsers(); updateLoadingBar(80); const found = usersDB.find(x => x[0] === u && x[1] === p); if (found) { localStorage.setItem('ink_logged_in', 'true'); localStorage.setItem('ink_user_role', found[2]); localStorage.setItem('ink_current_user', u); location.reload(); } else { document.getElementById('login-error').classList.remove('hidden'); btn.innerText = "เข้าสู่ระบบ"; btn.disabled = false; updateLoadingBar(0, false); } }
     function handleLogout() { localStorage.clear(); location.reload(); }
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
     function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
     function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
-    function askDeleteUser(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); await fetchUsers(); loadUserManagement(); closeConfirm(); showToast("ลบแล้ว","success"); }; }
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if(s){sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden');}else{sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden');} }
     function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     function showToast(m, t) { const c = document.getElementById('toast-container'), toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-sm uppercase">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
