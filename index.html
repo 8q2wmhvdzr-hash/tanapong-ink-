@@ -20,7 +20,6 @@
     #login-view.active { display: flex; background-color: #001b6e; }
     #main-view.active { display: flex; background-color: #f1f5f9; }
     @media (max-width: 767px) { #main-view.active { display: block; } }
-    @media print { aside, header, .nav-btn, #toast-container { display: none !important; } .p-8 { padding: 0 !important; } }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
   </style>
 </head>
@@ -90,7 +89,7 @@
                 <button onclick="exportExcel()" class="px-4 py-2 bg-green-600 text-white rounded-xl font-bold">EXCEL</button>
                 <button onclick="window.print()" class="px-4 py-2 bg-red-600 text-white rounded-xl font-bold">PDF</button>
                 <select id="chart-type" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="line">กราฟเส้น</option><option value="bar">กราฟแท่ง</option></select>
-                <select id="chart-filter" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="OUT">เบิกออก</option><option value="IN">รับเข้า</option><option value="both">ดูทั้งหมด</option></select>
+                <select id="chart-filter" onchange="loadChart()" class="bg-slate-100 rounded-xl px-2 py-2 font-bold outline-none font-bold"><option value="OUT">เบิกออก</option><option value="IN">รับเข้า</option><option value="SELL">ขาย</option><option value="both">ดูทั้งหมด</option></select>
                 <div class="relative inline-block text-left font-bold" id="machine-select-container">
                   <button type="button" onclick="toggleMachineDropdown()" class="bg-slate-100 rounded-xl px-3 py-2 font-bold outline-none flex items-center gap-1.5 text-slate-700">
                     <span id="machine-select-label">ทุกเครื่อง</span>
@@ -132,7 +131,6 @@
     </div>
   </div>
 
-  <!-- MODAL กดดูรูปขนาดใหญ่ และ ปุ่มลบรูป -->
   <div id="image-viewer-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all z-[2500] p-6 text-center">
     <button onclick="closeImageViewer()" class="absolute top-6 right-6 p-3 bg-white/10 text-white rounded-full hover:bg-white/30 transition-all"><i data-lucide="x" class="w-6 h-6"></i></button>
     <img id="viewer-img" src="" class="max-w-full max-h-[70vh] rounded-2xl shadow-2xl mb-6 object-contain">
@@ -140,12 +138,13 @@
     <button id="btn-delete-img" class="hidden px-6 py-3 bg-red-600 text-white font-bold rounded-2xl shadow-lg hover:bg-red-700 flex items-center gap-2 transition-all active:scale-95"><i data-lucide="trash-2" class="w-5 h-5"></i> ลบรูปภาพนี้</button>
   </div>
 
-  <!-- MODAL เบิกออก/รับเข้า -->
+  <!-- MODAL เบิกออก/รับเข้า/ขาย (ปรับแต่ง 100%) -->
   <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1500] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3.5rem] shadow-2xl p-8 scale-95 transition-transform duration-300">
       <h3 id="modal-title" class="text-2xl font-bold mb-1 text-slate-800"></h3>
       <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase break-all font-bold tracking-widest"></p>
       
+      <!-- เครื่องจะโชว์เฉพาะตอน "จ่ายออก" เท่านั้น -->
       <div id="modal-machine-select" class="mb-4 text-left hidden">
         <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1">โปรดระบุเครื่องที่เบิก</label>
         <select id="modal-machine-dropdown" class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-bold text-slate-700"></select>
@@ -155,7 +154,7 @@
         <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1">ระบุจำนวนสินค้า</label>
         <input type="number" id="modal-qty" min="1" onkeypress="if(event.key==='-'||event.key==='e') return false; if(event.key==='Enter') document.getElementById('modal-submit').click()" class="w-full text-center text-4xl font-bold p-5 bg-slate-50 rounded-3xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all">
       </div>
-      <div id="modal-remark-container" class="mb-8 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1">หมายเหตุ</label><input type="text" id="modal-remark" onkeypress="if(event.key==='Enter') document.getElementById('modal-submit').click()" placeholder="..." class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-bold"></div>
+      <div id="modal-remark-container" class="mb-8 text-left"><label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1">หมายเหตุ / ชื่อลูกค้า</label><input type="text" id="modal-remark" onkeypress="if(event.key==='Enter') document.getElementById('modal-submit').click()" placeholder="..." class="w-full px-5 py-3 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none text-sm font-bold"></div>
       <div class="flex gap-4 font-bold">
         <button onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button>
         <button id="modal-submit" class="flex-1 py-4 bg-[#102a96] text-white rounded-2xl shadow-xl">ตกลง</button>
@@ -163,7 +162,6 @@
     </div>
   </div>
 
-  <!-- MODAL จัดการสต็อก (ADMIN) & อัปโหลดรูป -->
   <div id="admin-stock-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1800] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-2 text-slate-800">แก้ไขข้อมูลสต็อก</h3>
@@ -184,19 +182,19 @@
         </div>
         <button id="btn-upload-img" onclick="uploadAdminImage()" class="w-full py-3 bg-slate-800 text-white font-bold rounded-2xl shadow-md flex items-center justify-center gap-2 text-sm active:scale-95 transition-all"><i data-lucide="image" class="w-4 h-4"></i> อัปโหลดรูป</button>
       </div>
-
       <button onclick="closeAdminStockModal()" class="w-full py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition-all">ปิดหน้าต่าง</button>
     </div>
   </div>
 
   <div id="admin-action-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1600] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div id="admin-action-icon" class="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner font-bold"></div> <h3 id="admin-action-title" class="text-2xl font-bold mb-8 text-slate-800 font-bold"></h3> <div class="space-y-4 mb-8 text-left"> <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Username</label><input type="text" id="admin-action-user" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label><input type="password" id="admin-action-pass" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> </div> <div class="flex gap-4"><button onclick="closeAdminActionModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="admin-action-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div> </div> </div>
-  <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[3000] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner font-bold"><i data-lucide="trash-2"></i></div> <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">ยืนยันการลบ?</h3> <p id="confirm-msg" class="text-sm text-slate-400 mb-8 font-medium px-4"></p> <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 shadow-xl transition-all">ลบทิ้ง</button></div> </div> </div>
+  <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[3000] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner font-bold"><i data-lucide="trash-2"></i></div> <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">ยืนยันการทำรายการ?</h3> <p id="confirm-msg" class="text-sm text-slate-400 mb-8 font-medium px-4"></p> <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 shadow-xl transition-all">ตกลง</button></div> </div> </div>
+  
   <div id="log-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1900] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300 relative text-left">
       <button onclick="document.getElementById('log-detail-modal').classList.remove('modal-show')" class="absolute top-6 right-6 p-2 bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
       <div class="w-14 h-14 rounded-2xl bg-blue-50 text-[#102a96] flex items-center justify-center mb-6 shadow-inner"><i data-lucide="file-text" class="w-6 h-6"></i></div>
       <h3 class="text-2xl font-bold mb-6 text-slate-800">รายละเอียดรายการ</h3>
-      <div class="space-y-4 text-sm font-medium text-slate-600">
+      <div class="space-y-4 text-sm font-medium text-slate-600 mb-8">
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>วัน-เวลา:</span> <span id="log-det-date" class="text-slate-800 font-bold"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>สินค้า:</span> <span id="log-det-id" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>ประเภท:</span> <span id="log-det-type" class="text-slate-800 font-bold"></span></div>
@@ -205,6 +203,8 @@
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>ผู้ทำรายการ:</span> <span id="log-det-user" class="text-slate-800 font-bold"></span></div>
         <div class="flex justify-between"><span>หมายเหตุ:</span> <span id="log-det-remark" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
       </div>
+      <!-- เพิ่มปุ่มลบประวัติ ลบทิ้งจากชีทตรงๆ -->
+      <button id="btn-delete-log" class="w-full py-4 bg-red-600 text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="trash-2" class="w-5 h-5"></i> ลบรายการนี้ออก</button>
     </div>
   </div>
 
@@ -213,7 +213,7 @@
   <script>
     // ---------------------------------------------------------------------
     // วาง URL ของ Web App ตรงนี้ครับ
-    const API_URL = "https://script.google.com/macros/s/AKfycbxWSDm6tpyUk-zlXvxMQsyBPgIF3lj4sd_0B8pTgJdRSN3d81WHptuUpaBjweW2fk6n/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbyXljIwvPLCMuz5cf7VsGWDAaSAsln4C7O6QGOCCpUAnpAZ4_dd7q_jIJuViIbYXDGI/exec"; 
     // ---------------------------------------------------------------------
 
     let inventory = [], usersDB = [], currentMachine = 'all', currentModalTask = null, currentAdminUserTask = null, currentAdminStockTask = null, chartInstance = null;
@@ -264,7 +264,6 @@
         lucide.createIcons();
     }
 
-    // ฟังก์ชันวาดโครงกระดูกตอนโหลดข้อมูล (Ghost UI)
     function renderSkeleton() {
         const grid = document.getElementById('inventory-view');
         let skeletons = '';
@@ -285,7 +284,8 @@
                         <div class="w-6 h-4 bg-slate-200 rounded"></div>
                     </div>
                     <div class="w-full bg-slate-200 h-1.5 rounded-full mb-5"></div>
-                    <div class="grid grid-cols-2 gap-2.5">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="h-10 bg-slate-200 rounded-xl"></div>
                         <div class="h-10 bg-slate-200 rounded-xl"></div>
                         <div class="h-10 bg-slate-200 rounded-xl"></div>
                     </div>
@@ -313,6 +313,20 @@
         };
     }
 
+    // ฟังก์ชันสั่งลบประวัติการทำรายการ (ตีกลับยอดอัตโนมัติ)
+    function askDeleteLog(id, type, qty) {
+        document.getElementById('log-detail-modal').classList.remove('modal-show');
+        document.getElementById('confirm-msg').innerText = `ลบประวัติของ [ ${id} ] ? (ระบบจะคืนยอดให้)`; document.getElementById('confirm-modal').classList.add('modal-show');
+        document.getElementById('confirm-btn').onclick = async () => {
+            closeConfirm(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+            try {
+                const payload = { action: 'deleteLog', id: id, type: type, qty: qty };
+                const resp = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); const res = await resp.json();
+                if(res.success) { showToast("ลบประวัติเรียบร้อย", "success"); lastLogFetchTime = 0; init(); loadNotificationHistory(); } else { showToast("ไม่พบรายการนี้", "error"); }
+            } catch(e) { showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
+        };
+    }
+
     function renderCards(mFilter = null) {
       const grid = document.getElementById('inventory-view'); const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
       const data = (mFilter && mFilter !== 'all') ? inventory.filter(i => isMachineMatch(i.machine, mFilter)) : inventory;
@@ -334,9 +348,11 @@
           </div>
           <div class="w-full"><div class="flex justify-between mb-2 text-xs font-semibold"><span>คงเหลือ</span><span>${item.qty}</span></div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mb-5"><div class="h-full transition-all duration-1000" style="width:${Math.min((item.qty/25)*100, 100)}%; background-color:${item.hex}"></div></div>
-            <div class="grid grid-cols-2 gap-2.5">
+            <!-- เปลี่ยนเป็น 3 ปุ่ม (รับเข้า, จ่ายออก, ขาย) -->
+            <div class="grid grid-cols-3 gap-2">
               <button onclick="openModal('${item.id}', 'IN', ${item.qty})" class="py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">รับเข้า</button>
-              <button onclick="openModal('${item.id}', 'OUT', ${item.qty})" class="py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">เบิกออก</button>
+              <button onclick="openModal('${item.id}', 'OUT', ${item.qty})" class="py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">จ่ายออก</button>
+              <button onclick="openModal('${item.id}', 'SELL', ${item.qty})" class="py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold active:scale-95 transition-all shadow-sm">ขาย</button>
             </div>
           </div>
         </div>`
@@ -345,55 +361,49 @@
     }
 
     function changeView(v, p=null) { 
-      // 💾 ระบบจดจำหน้าเว็บ: บันทึกหน้าที่กำลังดูลง LocalStorage
-      localStorage.setItem('ink_current_view', v);
-      if(p) localStorage.setItem('ink_current_machine', p);
-      else localStorage.removeItem('ink_current_machine');
-
-      currentMachine = p || 'all'; 
-      document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('sidebar-active'); b.classList.add('opacity-75'); }); 
-      document.getElementById('inventory-view').classList.add('hidden'); 
-      document.getElementById('summary-view').classList.add('hidden'); 
-      document.getElementById('users-view').classList.add('hidden'); 
-
-      if (v==='all') { 
-        document.getElementById('inventory-view').classList.remove('hidden'); 
-        document.getElementById('nav-all').classList.add('sidebar-active'); 
-        document.getElementById('nav-all').classList.remove('opacity-75'); 
-        renderCards(); document.getElementById('page-title').innerText="All Items"; 
-      } else if (v==='summary') { 
-        document.getElementById('summary-view').classList.remove('hidden'); 
-        const navObj = document.getElementById('nav-summary'); 
-        if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } 
-        loadChart(); document.getElementById('page-title').innerText="Summary Report"; 
-      } else if (v==='users') { 
-        document.getElementById('users-view').classList.remove('hidden'); 
-        const navObj = document.getElementById('nav-users'); 
-        if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } 
-        loadUserManagement(); document.getElementById('page-title').innerText="User Management"; 
-      } else { 
-        document.getElementById('inventory-view').classList.remove('hidden'); 
-        const navObj = document.getElementById(`nav-${p.replace(/\s/g,'')}`); 
-        if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } 
-        renderCards(p); document.getElementById('page-title').innerText=p; 
-      } 
+      localStorage.setItem('ink_current_view', v); if(p) localStorage.setItem('ink_current_machine', p); else localStorage.removeItem('ink_current_machine');
+      currentMachine = p || 'all'; document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('sidebar-active'); b.classList.add('opacity-75'); }); document.getElementById('inventory-view').classList.add('hidden'); document.getElementById('summary-view').classList.add('hidden'); document.getElementById('users-view').classList.add('hidden'); 
+      if (v==='all') { document.getElementById('inventory-view').classList.remove('hidden'); document.getElementById('nav-all').classList.add('sidebar-active'); document.getElementById('nav-all').classList.remove('opacity-75'); renderCards(); document.getElementById('page-title').innerText="All Items"; 
+      } else if (v==='summary') { document.getElementById('summary-view').classList.remove('hidden'); const navObj = document.getElementById('nav-summary'); if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } loadChart(); document.getElementById('page-title').innerText="Summary Report"; 
+      } else if (v==='users') { document.getElementById('users-view').classList.remove('hidden'); const navObj = document.getElementById('nav-users'); if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } loadUserManagement(); document.getElementById('page-title').innerText="User Management"; 
+      } else { document.getElementById('inventory-view').classList.remove('hidden'); const navObj = document.getElementById(`nav-${p.replace(/\s/g,'')}`); if(navObj) { navObj.classList.add('sidebar-active'); navObj.classList.remove('opacity-75'); } renderCards(p); document.getElementById('page-title').innerText=p; } 
     }
 
+    // ฟังก์ชันเปิดป๊อปอัปให้ฉลาดขึ้นตามประเภท
     function openModal(id, type, qty) {
       const item = inventory.find(i => i.id === id); currentModalTask = { id, type, oldQty: qty, machines: item.machine.split(/[/,]/).map(s=>s.trim()).filter(s=>s) };
-      document.getElementById('modal').classList.add('modal-show'); document.getElementById('modal-title').innerText = type === 'IN' ? 'รับเข้าสินค้า' : 'เบิกออกสินค้า'; document.getElementById('modal-sub').innerText = id;
+      document.getElementById('modal').classList.add('modal-show'); 
+      
+      let title = '';
+      if(type === 'IN') title = 'รับเข้าสินค้า (คลังกลาง)';
+      else if(type === 'OUT') title = 'จ่ายออกสินค้า (ให้เครื่อง)';
+      else if(type === 'SELL') title = 'ขายสินค้า (ให้ลูกค้า)';
+      
+      document.getElementById('modal-title').innerText = title; 
+      document.getElementById('modal-sub').innerText = id;
       document.getElementById('modal-qty').value = ''; document.getElementById('modal-remark').value = '';
+      
+      // บังคับเลือกเครื่อง เฉพาะกรณีจ่ายออก (OUT) เท่านั้น
       const mcSelect = document.getElementById('modal-machine-select'); const mcDropdown = document.getElementById('modal-machine-dropdown');
-      if (currentMachine === 'all' && currentModalTask.machines.length > 1) { mcSelect.classList.remove('hidden'); mcDropdown.innerHTML = currentModalTask.machines.map(m => `<option value="${m}">${m}</option>`).join(''); } else { mcSelect.classList.add('hidden'); }
+      if (type === 'OUT') { 
+          mcSelect.classList.remove('hidden'); 
+          mcDropdown.innerHTML = currentModalTask.machines.map(m => `<option value="${m}">${m}</option>`).join(''); 
+      } else { mcSelect.classList.add('hidden'); }
     }
 
     document.getElementById('modal-submit').onclick = async () => {
       const amt = parseFloat(document.getElementById('modal-qty').value); if (isNaN(amt) || amt <= 0) { showToast("ระบุจำนวนไม่ถูกต้อง", "error"); return; }
-      const { id, type, oldQty, machines } = currentModalTask; if (type === 'OUT' && amt > oldQty) { showToast("ยอดคงเหลือไม่พอเบิก!", "error"); return; }
-      let machineContext = currentMachine; if (currentMachine === 'all') { if (machines.length > 1) machineContext = document.getElementById('modal-machine-dropdown').value; else machineContext = machines[0] || 'Unknown'; }
+      const { id, type, oldQty, machines } = currentModalTask; if ((type === 'OUT' || type === 'SELL') && amt > oldQty) { showToast("ยอดคงเหลือไม่พอเบิก!", "error"); return; }
+      
+      let machineContext = ''; 
+      if (type === 'IN') machineContext = 'คลังกลาง'; 
+      else if (type === 'SELL') machineContext = 'ขาย (SELL)'; 
+      else if (type === 'OUT') { machineContext = document.getElementById('modal-machine-dropdown').value; }
+      
       const remark = document.getElementById('modal-remark').value.trim() || "-"; closeModal(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
       const idx = inventory.findIndex(i => i.id === id); if (idx !== -1) { inventory[idx].qty = type === 'IN' ? inventory[idx].qty + amt : inventory[idx].qty - amt; renderCards(currentMachine); }
-      try { const payload = { action: 'update', id: id, amt: amt, type: type, remark: remark, user: localStorage.getItem('ink_current_user'), machine: machineContext }; await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500"; showToast(`บันทึก${type==='IN'?'รับเข้า':'เบิกออก'}สำเร็จ`, 'success'); lastLogFetchTime = 0; init(); loadNotificationHistory(); } catch (e) { showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
+      
+      try { const payload = { action: 'update', id: id, amt: amt, type: type, remark: remark, user: localStorage.getItem('ink_current_user'), machine: machineContext }; await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500"; showToast(`บันทึก${type==='IN'?'รับเข้า':'จ่าย/ขาย'}สำเร็จ`, 'success'); lastLogFetchTime = 0; init(); loadNotificationHistory(); } catch (e) { showToast("เกิดข้อผิดพลาดในการเชื่อมต่อ", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
     };
 
     function openAdminStockModal(id, qty) { currentAdminStockTask={id,qty}; document.getElementById('admin-stock-modal').classList.add('modal-show'); document.getElementById('admin-stock-sub').innerText = id; document.getElementById('admin-stock-qty').value = qty; document.getElementById('admin-image-file').value = ""; }
@@ -436,8 +446,20 @@
     async function manageUserDB(mode, user, pass, old) { await fetch(`${API_URL}?action=manageUser&mode=${mode}&user=${user}&pass=${pass}&oldUser=${old}`); await fetchUsers(); loadUserManagement(); showToast("บันทึกเรียบร้อย", "success"); }
     document.getElementById('admin-action-submit').onclick = async () => { const user = document.getElementById('admin-action-user').value.trim(), pass = document.getElementById('admin-action-pass').value.trim(); const mode = currentAdminUserTask !== null ? 'edit' : 'add', old = currentAdminUserTask !== null ? usersDB[currentAdminUserTask][0] : ''; if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง!", "error"); return; } closeAdminActionModal(); showToast("กำลังบันทึก...", "success"); await manageUserDB(mode, user, pass, old); };
 
-    function showLogDetail(date, id, type, qty, user, remark, balance) { document.getElementById('log-det-date').innerText = date; document.getElementById('log-det-id').innerText = id; document.getElementById('log-det-type').innerText = type === 'IN' ? 'รับเข้า (IN)' : type === 'OUT' ? 'เบิกออก (OUT)' : 'แก้ไขสต็อก (EDIT)'; document.getElementById('log-det-type').className = type === 'IN' ? 'text-green-600 font-bold' : type === 'OUT' ? 'text-[#0a2384] font-bold' : 'text-orange-500 font-bold'; document.getElementById('log-det-qty').innerText = qty + ' ชิ้น'; document.getElementById('log-det-balance').innerText = (balance && balance !== 'undefined' && balance !== '-') ? balance + ' ชิ้น' : '-'; document.getElementById('log-det-user').innerText = user || '-'; document.getElementById('log-det-remark').innerText = remark || '-'; document.getElementById('log-detail-modal').classList.add('modal-show'); }
-    async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 100); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => { const dt = new Date(l[0]); const timeStr = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()} ${dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}`; const fullDateStr = dt.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); const safeId = String(l[4] || l[1]).replace(/'/g, "\\'"); const safeUser = String(l[7] || l[4] || '-').replace(/'/g, "\\'"); const safeRemark = String(l[8] || l[5] || '-').replace(/'/g, "\\'"); const safeBalance = String(l[9] || l[6] || '-').replace(/'/g, "\\'"); return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${l[5] || l[2]}', '${l[6] || l[3]}', '${safeUser}', '${safeRemark}', '${safeBalance}')" class="py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-3 -mx-3 rounded-2xl transition-all"><div class="flex justify-between items-start mb-1.5"><span class="text-[14px] font-bold text-slate-800 pr-2 leading-tight">${safeId}</span><span class="text-[10px] text-slate-400 font-bold shrink-0 pt-0.5">${timeStr}</span></div><div class="text-[12px] font-bold text-slate-500">${(l[5] || l[2])==='IN'?'รับเข้า':(l[5] || l[2])==='OUT'?'เบิกออก':'แก้ไขเป็น'} <span class="text-slate-800">${l[6] || l[3]}</span> ชิ้น</div></div>`; }).join(''); } catch(e){} }
+    function showLogDetail(date, id, type, qty, user, remark, balance) { 
+      document.getElementById('log-det-date').innerText = date; document.getElementById('log-det-id').innerText = id; 
+      let tDisplay = type === 'IN' ? 'รับเข้า (IN)' : type === 'OUT' ? 'จ่ายออก (OUT)' : type === 'SELL' ? 'ขาย (SELL)' : 'แก้ไขสต็อก (EDIT)';
+      document.getElementById('log-det-type').innerText = tDisplay; document.getElementById('log-det-type').className = type === 'IN' ? 'text-green-600 font-bold' : type === 'SELL' ? 'text-blue-600 font-bold' : type === 'OUT' ? 'text-amber-500 font-bold' : 'text-orange-500 font-bold'; 
+      document.getElementById('log-det-qty').innerText = qty + ' ชิ้น'; document.getElementById('log-det-balance').innerText = (balance && balance !== 'undefined' && balance !== '-') ? balance + ' ชิ้น' : '-'; document.getElementById('log-det-user').innerText = user || '-'; document.getElementById('log-det-remark').innerText = remark || '-'; document.getElementById('log-detail-modal').classList.add('modal-show'); 
+      
+      // ผูกปุ่มลบ ให้กดแล้วเรียกถามการลบทันที
+      const delBtn = document.getElementById('btn-delete-log');
+      delBtn.onclick = () => askDeleteLog(id, type, qty);
+    }
+
+    async function loadNotificationHistory() { try { const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); const logs = await resp.json(); const list = document.getElementById('notification-list'); if (logs.length <= 1) { list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; return; } const recent = logs.slice(1).reverse().slice(0, 100); document.getElementById('bell-badge').classList.remove('hidden'); list.innerHTML = recent.map(l => { const dt = new Date(l[0]); const timeStr = `${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth() + 1).padStart(2, '0')}/${dt.getFullYear()} ${dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}`; const fullDateStr = dt.toLocaleString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); const safeId = String(l[4] || l[1]).replace(/'/g, "\\'"); const safeUser = String(l[7] || l[4] || '-').replace(/'/g, "\\'"); const safeRemark = String(l[8] || l[5] || '-').replace(/'/g, "\\'"); const safeBalance = String(l[9] || l[6] || '-').replace(/'/g, "\\'"); 
+      let tShow = (l[5] || l[2])==='IN'?'รับเข้า':(l[5] || l[2])==='OUT'?'จ่ายออก':(l[5] || l[2])==='SELL'?'ขาย':'แก้ไขเป็น';
+      return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${l[5] || l[2]}', '${l[6] || l[3]}', '${safeUser}', '${safeRemark}', '${safeBalance}')" class="py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-3 -mx-3 rounded-2xl transition-all"><div class="flex justify-between items-start mb-1.5"><span class="text-[14px] font-bold text-slate-800 pr-2 leading-tight">${safeId}</span><span class="text-[10px] text-slate-400 font-bold shrink-0 pt-0.5">${timeStr}</span></div><div class="text-[12px] font-bold text-slate-500">${tShow} <span class="text-slate-800">${l[6] || l[3]}</span> ชิ้น</div></div>`; }).join(''); } catch(e){} }
     async function loadChart() { 
       if (Date.now() - lastLogFetchTime > 15000) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin"; const resp = await fetch(`${API_URL}?action=getLogs&t=${Date.now()}`); cachedLogs = (await resp.json()).slice(1); lastLogFetchTime = Date.now(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500"; }
       const logs = cachedLogs; const startDateInput = document.getElementById('chart-date-start') ? document.getElementById('chart-date-start').value : ''; const endDateInput = document.getElementById('chart-date-end') ? document.getElementById('chart-date-end').value : ''; const filter = document.getElementById('chart-filter').value, cType = document.getElementById('chart-type').value; const chkAll = document.getElementById('chk-m-all'); const allChecked = chkAll ? chkAll.checked : true; const checkedBoxes = Array.from(document.querySelectorAll('.chk-machine:checked')).map(el => el.value); const labelObj = document.getElementById('machine-select-label'); if (labelObj) { if (allChecked || checkedBoxes.length === 0) labelObj.innerText = "ทุกเครื่อง"; else if (checkedBoxes.length === 1) labelObj.innerText = checkedBoxes[0]; else labelObj.innerText = `เลือกแล้ว (${checkedBoxes.length})`; }
@@ -450,19 +472,11 @@
     
     async function init() { 
       try { 
-        // 💾 โหลด Skeleton UI เฉพาะตอนเปิดเว็บครั้งแรกที่ยังไม่มีข้อมูล
         if(inventory.length === 0) renderSkeleton();
-
         const resp = await fetch(`${API_URL}?action=get&t=${Date.now()}`); 
         inventory = await resp.json(); 
-        
         renderMachineMenu(); 
-
-        // 💾 ระบบจดจำหน้าเว็บ: ดึงค่าหน้าล่าสุดจาก LocalStorage มาแสดงผล (ถ้าไม่มีให้ไปหน้า all)
-        const savedView = localStorage.getItem('ink_current_view') || 'all';
-        const savedMachine = localStorage.getItem('ink_current_machine') || null;
-        changeView(savedView, savedMachine);
-
+        const savedView = localStorage.getItem('ink_current_view') || 'all'; const savedMachine = localStorage.getItem('ink_current_machine') || null; changeView(savedView, savedMachine);
         document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0"; 
       } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0"; } 
     }
