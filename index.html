@@ -221,7 +221,7 @@
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>ผู้ทำรายการ:</span> <span id="log-det-user" class="text-slate-800 font-bold"></span></div>
         <div class="flex justify-between"><span>หมายเหตุ:</span> <span id="log-det-remark" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
       </div>
-      <button id="btn-delete-log" class="w-full py-4 bg-red-600 text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 flex items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="trash-2" class="w-5 h-5"></i> ลบรายการนี้ทิ้ง (ตีคืนยอด)</button>
+      <button id="btn-delete-log" class="hidden w-full py-4 bg-red-600 text-white font-bold rounded-2xl shadow-xl hover:bg-red-700 items-center justify-center gap-2 transition-all active:scale-95"><i data-lucide="trash-2" class="w-5 h-5"></i> ลบรายการนี้ทิ้ง (ตีคืนยอด)</button>
     </div>
   </div>
 
@@ -229,10 +229,8 @@
 
   <script>
     // ---------------------------------------------------------------------
-    // 1. นำลิงก์ Web App API ของ Google Sheet วางตรงนี้
     const API_URL = "https://script.google.com/macros/s/AKfycbzS0GmD9Tv5fXIwPmgBNn8E6V_jdRXdM10uNnNssSM2sZBc_wh9gYNJI5D5O9LTBZNp/exec"; 
 
-    // 2. การเชื่อมต่อ Firebase ความเร็วแสง
     const firebaseConfig = {
       apiKey: "AIzaSyAhpNP5CJSQfiu4iqxdwp7gOIJMcSQne1o",
       authDomain: "inkpro-91b8e.firebaseapp.com",
@@ -280,7 +278,9 @@
 
     function isMachineMatch(itemMachine, currentView) {
         if (!itemMachine) return false;
-        let im = String(itemMachine).toLowerCase(); let cv = String(currentView).toLowerCase();
+        let im = String(itemMachine).toLowerCase().replace(/[()]/g, ''); 
+        let cv = String(currentView).toLowerCase().replace(/[()]/g, '');
+        
         if (im === cv) return true;
         let machines = im.split(/[/,]/).map(s => s.trim());
         for (let m of machines) {
@@ -295,7 +295,9 @@
         return false;
     }
 
+    // 🌟 อัปเดตเมนู: ตรวจสอบสิทธิ์ว่าแอดมินหรือพนักงาน
     function renderMachineMenu() {
+        const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
         const outMachines = MACHINE_LIST.map(m => `
             <button onclick="changeMode('OUT', '${m}');" id="nav-OUT-${m.replace(/\s/g, '')}" class="nav-btn w-full flex items-center gap-3 p-3 pl-10 rounded-xl hover:bg-white/5 transition opacity-75 text-xs text-left font-bold text-white">
                 <i data-lucide="${m.toLowerCase().includes('cylinder')?'layers':'monitor'}" class="w-4 h-4"></i><span class="truncate">${m}</span>
@@ -308,11 +310,15 @@
                     <i data-lucide="layout-grid" class="w-5 h-5"></i> เช็คสต็อกรวม
                 </button>
             </div>
+            
             <div class="pt-6 pb-2 px-4 text-[10px] font-extrabold text-blue-300 uppercase tracking-widest border-t border-white/5 mt-4 mb-2">ทำรายการ (Transactions)</div>
             <div class="space-y-1">
+                ${isAdmin ? `
                 <button onclick="changeMode('IN', 'all');" id="nav-IN-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-75 font-bold text-green-400">
                     <i data-lucide="download" class="w-5 h-5"></i> รับเข้า (IN)
                 </button>
+                ` : ''}
+
                 <div class="w-full">
                     <button onclick="document.getElementById('out-submenu').classList.toggle('hidden');" class="w-full flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition opacity-75 font-bold text-amber-400">
                         <div class="flex items-center gap-3"><i data-lucide="upload" class="w-5 h-5"></i> จ่ายออก (OUT)</div>
@@ -322,26 +328,28 @@
                         ${outMachines}
                     </div>
                 </div>
+
+                ${isAdmin ? `
                 <button onclick="changeMode('SELL', 'all');" id="nav-SELL-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-75 font-bold text-blue-400">
                     <i data-lucide="shopping-cart" class="w-5 h-5"></i> ขาย (SELL)
                 </button>
+                ` : ''}
             </div>
+            
+            ${isAdmin ? `
             <div class="pt-6 pb-2 px-4 text-[10px] font-extrabold text-blue-300 uppercase tracking-widest border-t border-white/5 mt-4 mb-2">ระบบและรายงาน</div>
             <div class="space-y-1">
                 <button onclick="changeMode('SUMMARY', 'all');" id="nav-SUMMARY-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-75 font-bold text-white">
                     <i data-lucide="bar-chart-3" class="w-5 h-5"></i> สรุปและรายงาน
                 </button>
-                <button onclick="changeMode('USERS', 'all');" id="nav-USERS-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-75 hidden text-orange-300 font-bold">
+                <button onclick="changeMode('USERS', 'all');" id="nav-USERS-all" class="nav-btn w-full flex items-center gap-3 p-4 rounded-xl hover:bg-white/5 transition opacity-75 font-bold text-orange-300">
                     <i data-lucide="users" class="w-5 h-5"></i> จัดการผู้ใช้งาน
                 </button>
             </div>
+            ` : ''}
         `;
         document.getElementById('dynamic-sidebar-menu').innerHTML = menuHTML;
         lucide.createIcons();
-        if (localStorage.getItem('ink_user_role') === 'admin') {
-            const adminBtn = document.getElementById('nav-USERS-all');
-            if(adminBtn) adminBtn.classList.remove('hidden');
-        }
     }
 
     function renderSkeleton() {
@@ -364,44 +372,9 @@
         grid.innerHTML = skeletons;
     }
 
-    function viewImage(url, id) {
-        document.getElementById('viewer-img').src = url; document.getElementById('viewer-title').innerText = id; document.getElementById('image-viewer-modal').classList.add('modal-show');
-        const isAdmin = localStorage.getItem('ink_user_role') === 'admin'; const delBtn = document.getElementById('btn-delete-img');
-        if (isAdmin) { delBtn.classList.remove('hidden'); delBtn.onclick = () => askDeleteImage(id); } else { delBtn.classList.add('hidden'); }
-    }
-    function closeImageViewer() { document.getElementById('image-viewer-modal').classList.remove('modal-show'); }
-    function askDeleteImage(id) {
-        closeImageViewer(); document.getElementById('confirm-msg').innerText = `ยืนยันการลบรูปภาพสินค้า [ ${id} ] ?`; document.getElementById('confirm-modal').classList.add('modal-show');
-        document.getElementById('confirm-btn').onclick = async () => {
-            closeConfirm(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
-            const idx = inventory.findIndex(i => i.id === id);
-            if (idx !== -1) { inventory[idx].img = ''; db.ref('inventory').set(inventory); }
-            try { const payload = { action: 'deleteImage', id: id }; fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); showToast("ลบรูปภาพสำเร็จ", "success"); } 
-            catch(e) { showToast("เกิดข้อผิดพลาด", "error"); }
-        };
-    }
-
-    function askDeleteLog(id, type, qty) {
-        document.getElementById('log-detail-modal').classList.remove('modal-show');
-        document.getElementById('confirm-msg').innerText = `ลบประวัติของ [ ${id} ] ? (ระบบจะคืนยอดให้)`; document.getElementById('confirm-modal').classList.add('modal-show');
-        document.getElementById('confirm-btn').onclick = async () => {
-            closeConfirm(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
-            const idx = inventory.findIndex(i => i.id === id);
-            if (idx !== -1) {
-                if(type === 'IN') inventory[idx].qty -= parseFloat(qty);
-                else if(type === 'OUT' || type === 'SELL') inventory[idx].qty += parseFloat(qty);
-                db.ref('inventory').set(inventory);
-            }
-            try { 
-                const payload = { action: 'deleteLog', id: id, type: type, qty: qty }; 
-                fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => forceSyncLogs());
-                showToast("ลบประวัติและตีคืนยอดแล้ว", "success"); 
-            } catch(e) { showToast("เกิดข้อผิดพลาด", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
-        };
-    }
-
     function renderCards() {
-      const grid = document.getElementById('inventory-view'); const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
+      const grid = document.getElementById('inventory-view'); 
+      const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
       const data = (currentMachine && currentMachine !== 'all' && currentMode === 'OUT') ? inventory.filter(i => isMachineMatch(i.machine, currentMachine)) : inventory;
       
       grid.innerHTML = data.map(item => {
@@ -484,7 +457,6 @@
 
     function openModal(id, type, qty) {
       const item = inventory.find(i => i.id === id); 
-      // 🌟 ดึงชื่อเครื่องจากไอเทมโดยตรง สำหรับรับเข้า (IN)
       currentModalTask = { id, type, oldQty: qty, itemMachine: item.machine }; 
       
       document.getElementById('modal').classList.add('modal-show'); 
@@ -499,7 +471,6 @@
       document.getElementById('modal-qty').value = ''; document.getElementById('modal-remark').value = '';
     }
 
-    // 🌟 ส่วนที่แก้ไขใหม่: ดักจับและแปลงค่าตอนกดปุ่มตกลง (SELL -> OUT)
     document.getElementById('modal-submit').onclick = async () => {
       const amt = parseFloat(document.getElementById('modal-qty').value); if (isNaN(amt) || amt <= 0) { showToast("ระบุจำนวนไม่ถูกต้อง", "error"); return; }
       const { id, type, oldQty } = currentModalTask; if ((type === 'OUT' || type === 'SELL') && amt > oldQty) { showToast("ยอดคงเหลือไม่พอ!", "error"); return; }
@@ -508,13 +479,13 @@
       if (type === 'SELL' && remark === "-") { showToast("กรุณาระบุชื่อลูกค้าหรือเลข SO", "error"); return; }
 
       let machineContext = ''; 
-      let sendType = type; // ตัวแปรสำหรับส่งประเภทสถานะเข้าชีท
+      let sendType = type;
 
       if (type === 'IN') { 
           machineContext = currentModalTask.itemMachine; 
       } else if (type === 'SELL') { 
-          machineContext = 'ส่งลูกค้า';  // แปลงให้ชีทขึ้นว่า "ส่งลูกค้า" (ช่อง C)
-          sendType = 'OUT';            // แปลงให้สถานะเปลี่ยนเป็น "OUT" (ช่อง F)
+          machineContext = 'ส่งลูกค้า'; 
+          sendType = 'OUT';            
       } else if (type === 'OUT') { 
           machineContext = currentMachine; 
       } 
@@ -528,12 +499,28 @@
       }
       
       try { 
-          // เปลี่ยนจากการส่ง 'type' ตรงๆ เป็นการส่ง 'sendType' ที่เราแปลงค่าแล้ว
           const payload = { action: 'update', id: id, amt: amt, type: sendType, remark: remark, user: localStorage.getItem('ink_current_user'), machine: machineContext }; 
           fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => forceSyncLogs()); 
           showToast(`บันทึกสำเร็จ`, 'success'); 
       } catch (e) { showToast("อัปเดตลง Sheet ไม่สำเร็จ", "error"); }
     };
+
+    function viewImage(url, id) {
+        document.getElementById('viewer-img').src = url; document.getElementById('viewer-title').innerText = id; document.getElementById('image-viewer-modal').classList.add('modal-show');
+        const isAdmin = localStorage.getItem('ink_user_role') === 'admin'; const delBtn = document.getElementById('btn-delete-img');
+        if (isAdmin) { delBtn.classList.remove('hidden'); delBtn.onclick = () => askDeleteImage(id); } else { delBtn.classList.add('hidden'); }
+    }
+    function closeImageViewer() { document.getElementById('image-viewer-modal').classList.remove('modal-show'); }
+    function askDeleteImage(id) {
+        closeImageViewer(); document.getElementById('confirm-msg').innerText = `ยืนยันการลบรูปภาพสินค้า [ ${id} ] ?`; document.getElementById('confirm-modal').classList.add('modal-show');
+        document.getElementById('confirm-btn').onclick = async () => {
+            closeConfirm(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+            const idx = inventory.findIndex(i => i.id === id);
+            if (idx !== -1) { inventory[idx].img = ''; db.ref('inventory').set(inventory); }
+            try { const payload = { action: 'deleteImage', id: id }; fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); showToast("ลบรูปภาพสำเร็จ", "success"); } 
+            catch(e) { showToast("เกิดข้อผิดพลาด", "error"); }
+        };
+    }
 
     function openAdminStockModal(id, qty) { currentAdminStockTask={id,qty}; document.getElementById('admin-stock-modal').classList.add('modal-show'); document.getElementById('admin-stock-sub').innerText = id; document.getElementById('admin-stock-qty').value = qty; document.getElementById('admin-image-file').value = ""; }
     function closeAdminStockModal() { document.getElementById('admin-stock-modal').classList.remove('modal-show'); }
@@ -578,6 +565,25 @@
         reader.readAsDataURL(file);
     }
 
+    function askDeleteLog(id, type, qty) {
+        document.getElementById('log-detail-modal').classList.remove('modal-show');
+        document.getElementById('confirm-msg').innerText = `ลบประวัติของ [ ${id} ] ? (ระบบจะคืนยอดให้)`; document.getElementById('confirm-modal').classList.add('modal-show');
+        document.getElementById('confirm-btn').onclick = async () => {
+            closeConfirm(); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+            const idx = inventory.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                if(type === 'IN') inventory[idx].qty -= parseFloat(qty);
+                else if(type === 'OUT' || type === 'SELL') inventory[idx].qty += parseFloat(qty);
+                db.ref('inventory').set(inventory);
+            }
+            try { 
+                const payload = { action: 'deleteLog', id: id, type: type, qty: qty }; 
+                fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }).then(() => forceSyncLogs());
+                showToast("ลบประวัติและตีคืนยอดแล้ว", "success"); 
+            } catch(e) { showToast("เกิดข้อผิดพลาด", "error"); document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500"; }
+        };
+    }
+
     function loadUserManagement() { document.getElementById('user-management-grid').innerHTML = usersDB.map((u, i) => `<div class="bg-white p-5 rounded-[2.5rem] border border-slate-200 flex flex-col justify-between shadow-sm hover:shadow-md transition-all"><div class="flex justify-between items-start mb-4"><div class="p-3 bg-slate-50 rounded-2xl"><i data-lucide="user" class="w-5 h-5 text-[#001b6e]"></i></div><span class="px-3 py-1 bg-blue-100 text-[#001b6e] text-[9px] font-extrabold rounded-full uppercase italic">${u[2]}</span></div><h4 class="font-bold text-slate-800 text-lg truncate mb-5">${u[0]}</h4><div class="flex items-center justify-end gap-2 border-t pt-4"><button onclick="openAdminUserActionModal(${i})" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase">แก้ไข</button>${u[0]!=='admin' ? `<button onclick="askDeleteUser('${u[0]}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-xs font-bold uppercase">ลบ</button>`:''}</div></div>`).join(''); lucide.createIcons(); }
     function openAdminUserActionModal(idx) { currentAdminUserTask = idx; document.getElementById('admin-action-modal').classList.add('modal-show'); document.getElementById('admin-action-title').innerText = idx !== null ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มพนักงานใหม่'; document.getElementById('admin-action-user').value = idx !== null ? usersDB[idx][0] : ''; document.getElementById('admin-action-pass').value = idx !== null ? usersDB[idx][1] : ''; document.getElementById('admin-action-icon').innerHTML = idx !== null ? '<i data-lucide="user-cog" class="w-8 h-8"></i>' : '<i data-lucide="user-plus" class="w-8 h-8"></i>'; document.getElementById('admin-action-icon').className = `w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner ${idx !== null ? 'bg-[#001b6e]' : 'bg-green-600'}`; lucide.createIcons(); }
     
@@ -599,28 +605,34 @@
       document.getElementById('log-det-user').innerText = user || '-'; 
       document.getElementById('log-det-remark').innerText = remark || '-'; 
       document.getElementById('log-detail-modal').classList.add('modal-show'); 
-      document.getElementById('btn-delete-log').onclick = () => askDeleteLog(id, type, qty);
+      
+      // 🌟 ซ่อนปุ่มลบประวัติถ้าไม่ใช่ Admin
+      const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
+      const delBtn = document.getElementById('btn-delete-log');
+      if (isAdmin) {
+          delBtn.classList.remove('hidden');
+          delBtn.classList.add('flex');
+          delBtn.onclick = () => askDeleteLog(id, type, qty);
+      } else {
+          delBtn.classList.add('hidden');
+          delBtn.classList.remove('flex');
+      }
     }
 
-    // 🌟 ระบบอ่านประวัติแบบเจาะจงคอลัมน์ ป้องกันการอ่านสลับเวลาพิมพ์มือผิด
     function renderLogsList(logs) {
         const list = document.getElementById('notification-list'); 
         if (!logs || logs.length === 0) { list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; return; } 
         const recent = logs.slice().reverse().slice(0, 100); 
         document.getElementById('bell-badge').classList.remove('hidden'); 
         list.innerHTML = recent.map(l => { 
-            
-            // อ่านค่าเวลาและวันที่ให้ถูกต้องเสมอ 
             const dt = new Date(l[0]); 
             const timeVal = l[1] instanceof Date ? l[1] : new Date(l[1]);
             const timeStr = !isNaN(timeVal) ? timeVal.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}) : String(l[1]).substring(0,5); 
             const fullDateStr = !isNaN(dt) ? dt.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + timeStr : l[0]; 
             
-            // ใช้ระบบ Smart Parser ค้นหาช่อง IN/OUT/SELL เพื่อดึงข้อมูลอื่นๆ รอบตัวให้ตรงเป๊ะ
             let tIdx = l.findIndex(v => ['IN', 'OUT', 'SELL', 'EDIT'].includes(String(v).trim().toUpperCase()));
             let tShowRaw = tIdx !== -1 ? String(l[tIdx]).trim().toUpperCase() : 'UNKNOWN';
             
-            // ดึงค่าซ้ายขวาอิงจากช่องประเภทการทำรายการ (กันการกรอกมือแล้วสลับคอลัมน์กัน)
             let safeId = tIdx > 0 ? String(l[tIdx - 1] || '-').replace(/'/g, "\\'") : String(l[4] || '-').replace(/'/g, "\\'");
             let safeQty = tIdx !== -1 ? String(l[tIdx + 1] || '0') : String(l[6] || '0');
             let safeUser = tIdx !== -1 ? String(l[tIdx + 2] || '-').replace(/'/g, "\\'") : String(l[7] || '-').replace(/'/g, "\\'");
@@ -685,8 +697,15 @@
             if (snapshot.exists()) {
                 inventory = snapshot.val();
                 renderMachineMenu(); 
-                const savedMode = localStorage.getItem('ink_current_mode') || 'ALL';
-                const savedMachine = localStorage.getItem('ink_current_machine') || 'all';
+                
+                // 🌟 บังคับพนักงาน (User) ให้ไปหน้า 'ALL' ตอนโหลดเสมอ เพื่อป้องกันค้างอยู่หน้าแอดมิน
+                const isAdmin = localStorage.getItem('ink_user_role') === 'admin';
+                let savedMode = localStorage.getItem('ink_current_mode') || 'ALL';
+                let savedMachine = localStorage.getItem('ink_current_machine') || 'all';
+                if (!isAdmin && (savedMode === 'IN' || savedMode === 'SELL' || savedMode === 'SUMMARY' || savedMode === 'USERS')) {
+                    savedMode = 'ALL'; savedMachine = 'all';
+                }
+
                 changeMode(savedMode, savedMachine);
                 document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500 shrink-0"; 
             } else {
@@ -716,6 +735,7 @@
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
     function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
     function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
+    function askDeleteUser(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); await fetchUsers(); loadUserManagement(); closeConfirm(); showToast("ลบแล้ว","success"); }; }
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if(s){sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden');}else{sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden');} }
     function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     function showToast(m, t) { const c = document.getElementById('toast-container'), toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-sm uppercase">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
