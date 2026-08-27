@@ -792,7 +792,27 @@
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
     function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
     function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
-    function askDeleteUser(u) { document.getElementById('confirm-msg').innerText=`ยืนยันการลบ [ ${u} ]?`; document.getElementById('confirm-modal').classList.add('modal-show'); document.getElementById('confirm-btn').onclick=async ()=>{ await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); await fetchUsers(); loadUserManagement(); closeConfirm(); showToast("ลบแล้ว","success"); }; }
+    function askDeleteUser(u) { 
+        document.getElementById('confirm-msg').innerText = `ยืนยันการลบ [ ${u} ]?`; 
+        document.getElementById('confirm-modal').classList.add('modal-show'); 
+        document.getElementById('confirm-btn').onclick = async () => { 
+            document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
+            
+            // 1. ส่งคำสั่งไปลบที่ Google Sheet
+            await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); 
+            
+            // 2. ดึงข้อมูลใหม่ล่าสุดมาอัปเดตทับ Firebase ให้ตรงกัน
+            const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); 
+            usersDB = await r.json(); 
+            db.ref('users').set(usersDB); // <--- เพิ่มตัวสั่งอัปเดต Firebase ตรงนี้
+            
+            // 3. ปิดหน้าต่างและรีเฟรชจอ
+            loadUserManagement(); 
+            closeConfirm(); 
+            document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
+            showToast("ลบพนักงานเรียบร้อย", "success"); 
+        }; 
+    }    
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if(s){sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden');}else{sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden');} }
     function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     function showToast(m, t) { const c = document.getElementById('toast-container'), toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-sm uppercase">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
