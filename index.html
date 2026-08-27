@@ -27,12 +27,18 @@
     @media (max-width: 767px) { #main-view.active { display: block; } }
     @media print { aside, header, .nav-btn, #toast-container { display: none !important; } .p-8 { padding: 0 !important; } }
     input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
+    
+    /* ซ่อนปุ่มวิทยุ (Radio) แบบเนียนๆ */
+    input[type="radio"].peer:checked + div { border-color: #102a96; background-color: #eff6ff; }
+    input[type="radio"].peer:checked + div svg { color: #102a96; }
+    input[type="radio"].peer:checked + div span { color: #102a96; }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 overflow-x-hidden">
 
   <div id="top-loading-bar"></div>
 
+  <!-- หน้า Login -->
   <div id="login-view" class="fixed inset-0 flex flex-col items-center justify-center p-4 z-[2000]">
     <div class="mb-6 text-center text-white">
       <div class="bg-white p-2 rounded-3xl shadow-xl mb-4 inline-flex items-center justify-center w-24 h-24 mx-auto"><img src="logo.png" alt="Logo" class="max-w-full max-h-full object-contain"></div>
@@ -42,8 +48,21 @@
     <div class="bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 relative border border-slate-100">
       <div id="login-error" class="hidden mb-4 p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold border border-red-100 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4"></i><span id="login-error-text">ข้อผิดพลาด</span></div>
       <div class="space-y-4">
-        <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">ชื่อผู้ใช้งาน</label><input type="text" id="login-user" onkeypress="if(event.key==='Enter') document.getElementById('login-btn-action').click()" placeholder="Username" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-bold transition-all"></div>
-        <div><label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">รหัสผ่าน</label><input type="password" id="login-pass" onkeypress="if(event.key==='Enter') document.getElementById('login-btn-action').click()" placeholder="••••••••" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-bold transition-all"></div>
+        <div>
+            <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">ชื่อผู้ใช้งาน</label>
+            <input type="text" id="login-user" onkeypress="if(event.key==='Enter') document.getElementById('login-btn-action').click()" placeholder="Username" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-bold transition-all">
+        </div>
+        <div>
+            <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">รหัสผ่าน</label>
+            <div class="relative">
+                <input type="password" id="login-pass" onkeypress="if(event.key==='Enter') document.getElementById('login-btn-action').click()" placeholder="••••••••" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-bold transition-all pr-12">
+                <!-- 🌟 ตาแมว เปิด/ปิด รหัสผ่าน หน้าล็อกอิน -->
+                <button type="button" onclick="togglePasswordVisibility('login-pass', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#102a96] transition-colors outline-none focus:outline-none">
+                    <i data-lucide="eye" class="w-5 h-5 show-icon"></i>
+                    <i data-lucide="eye-off" class="w-5 h-5 hidden hide-icon"></i>
+                </button>
+            </div>
+        </div>
         <button id="login-btn-action" onclick="handleLogin()" class="w-full bg-[#102a96] text-white py-4 rounded-2xl font-bold hover:bg-blue-800 shadow-xl transition-all active:scale-95">เข้าสู่ระบบ</button>
       </div>
     </div>
@@ -205,23 +224,55 @@
     </div>
   </div>
 
-  <!-- 🌟 เพิ่มช่องเลือกระดับสิทธิ์ ในกล่องเพิ่มพนักงาน -->
+  <!-- 🌟 อัปเดตหน้าจัดการ/เพิ่มพนักงาน (เปลี่ยน Dropdown เป็นกล่อง Card 2 ฝั่ง) -->
   <div id="admin-action-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1600] p-4 text-center"> 
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> 
       <div id="admin-action-icon" class="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner font-bold"></div> 
       <h3 id="admin-action-title" class="text-2xl font-bold mb-8 text-slate-800 font-bold"></h3> 
+      
       <div class="space-y-4 mb-8 text-left"> 
-        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Username</label><input type="text" id="admin-action-user" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> 
-        <div><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label><input type="password" id="admin-action-pass" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold"></div> 
         <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">ระดับสิทธิ์ (Role)</label>
-          <select id="admin-action-role" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold text-slate-700">
-            <option value="user">พนักงาน (เบิกจ่ายได้อย่างเดียว)</option>
-            <option value="admin">แอดมิน (จัดการระบบได้ทั้งหมด)</option>
-          </select>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Username</label>
+            <input type="text" id="admin-action-user" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold">
+        </div> 
+        <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label>
+            <div class="relative">
+                <input type="password" id="admin-action-pass" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold pr-12">
+                <!-- 🌟 ตาแมว เปิด/ปิด รหัสผ่าน หน้าตั้งค่าแอดมิน -->
+                <button type="button" onclick="togglePasswordVisibility('admin-action-pass', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#102a96] transition-colors outline-none focus:outline-none">
+                    <i data-lucide="eye" class="w-5 h-5 show-icon"></i>
+                    <i data-lucide="eye-off" class="w-5 h-5 hidden hide-icon"></i>
+                </button>
+            </div>
+        </div> 
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest">ระดับสิทธิ์ (Role)</label>
+          <!-- 🌟 เปลี่ยน Dropdown ให้เป็นการ์ดตัวเลือกสวยๆ -->
+          <div class="grid grid-cols-2 gap-3 mt-1">
+            <label class="cursor-pointer relative">
+              <input type="radio" name="role_select" id="role-user" value="user" class="peer sr-only" checked>
+              <div class="p-3 rounded-2xl border-2 border-slate-100 bg-slate-50 hover:bg-slate-100 transition-all flex flex-col items-center text-center gap-1 h-full justify-center">
+                <i data-lucide="user" class="w-5 h-5 text-slate-400 mb-1"></i>
+                <span class="text-xs font-bold text-slate-700">พนักงาน</span>
+                <span class="text-[9px] text-slate-400 font-medium">เบิกจ่าย / ดูสต๊อก</span>
+              </div>
+            </label>
+            <label class="cursor-pointer relative">
+              <input type="radio" name="role_select" id="role-admin" value="admin" class="peer sr-only">
+              <div class="p-3 rounded-2xl border-2 border-slate-100 bg-slate-50 hover:bg-slate-100 transition-all flex flex-col items-center text-center gap-1 h-full justify-center">
+                <i data-lucide="shield-check" class="w-5 h-5 text-slate-400 mb-1"></i>
+                <span class="text-xs font-bold text-slate-700">แอดมิน</span>
+                <span class="text-[9px] text-slate-400 font-medium">จัดการเต็มรูปแบบ</span>
+              </div>
+            </label>
+          </div>
         </div>
       </div> 
-      <div class="flex gap-4"><button onclick="closeAdminActionModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button><button id="admin-action-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button></div> 
+      <div class="flex gap-4">
+          <button onclick="closeAdminActionModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button>
+          <button id="admin-action-submit" class="flex-1 py-4 bg-[#102a96] text-white font-bold rounded-2xl shadow-xl">บันทึก</button>
+      </div> 
     </div> 
   </div>
 
@@ -607,20 +658,47 @@
         lucide.createIcons(); 
     }
     
-    // 🌟 1. ดึง Role มาแสดงในหน้าแก้ไข/เพิ่ม
+    // 🌟 ระบบเปิดปิดรหัสผ่านตาแมว
+    function togglePasswordVisibility(inputId, btnElement) {
+        const input = document.getElementById(inputId);
+        const showIcon = btnElement.querySelector('.show-icon');
+        const hideIcon = btnElement.querySelector('.hide-icon');
+        
+        if (input.type === "password") {
+            input.type = "text";
+            showIcon.classList.add('hidden');
+            hideIcon.classList.remove('hidden');
+        } else {
+            input.type = "password";
+            showIcon.classList.remove('hidden');
+            hideIcon.classList.add('hidden');
+        }
+    }
+
     function openAdminUserActionModal(idx) { 
         currentAdminUserTask = idx; 
         document.getElementById('admin-action-modal').classList.add('modal-show'); 
         document.getElementById('admin-action-title').innerText = idx !== null ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มพนักงานใหม่'; 
         document.getElementById('admin-action-user').value = idx !== null ? usersDB[idx][0] : ''; 
         document.getElementById('admin-action-pass').value = idx !== null ? usersDB[idx][1] : ''; 
-        document.getElementById('admin-action-role').value = idx !== null ? usersDB[idx][2] : 'user'; 
+        
+        // 🌟 ตั้งค่ากล่องให้ตรงกับ Role ที่ผู้ใช้มี
+        const role = idx !== null ? usersDB[idx][2] : 'user'; 
+        if(role === 'admin') document.getElementById('role-admin').checked = true;
+        else document.getElementById('role-user').checked = true;
+        
+        // 🌟 รีเซ็ตตาแมวให้ปิดรหัสผ่านตอนเปิดหน้าจอเสมอ
+        const passInput = document.getElementById('admin-action-pass');
+        passInput.type = "password";
+        const btn = passInput.nextElementSibling;
+        btn.querySelector('.show-icon').classList.remove('hidden');
+        btn.querySelector('.hide-icon').classList.add('hidden');
+        
         document.getElementById('admin-action-icon').innerHTML = idx !== null ? '<i data-lucide="user-cog" class="w-8 h-8"></i>' : '<i data-lucide="user-plus" class="w-8 h-8"></i>'; 
         document.getElementById('admin-action-icon').className = `w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner ${idx !== null ? 'bg-[#001b6e]' : 'bg-green-600'}`; 
         lucide.createIcons(); 
     }
     
-    // 🌟 2. ส่ง Role กลับไปหา Backend 
     async function manageUserDB(mode, user, pass, old, role) { 
         await fetch(`${API_URL}?action=manageUser&mode=${mode}&user=${user}&pass=${pass}&oldUser=${old}&role=${role}`); 
         const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); 
@@ -633,10 +711,10 @@
     document.getElementById('admin-action-submit').onclick = async () => { 
         const user = document.getElementById('admin-action-user').value.trim();
         const pass = document.getElementById('admin-action-pass').value.trim();
-        const role = document.getElementById('admin-action-role').value; 
+        const role = document.querySelector('input[name="role_select"]:checked').value; 
         const mode = currentAdminUserTask !== null ? 'edit' : 'add';
         const old = currentAdminUserTask !== null ? usersDB[currentAdminUserTask][0] : ''; 
-        if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง!", "error"); return; } 
+        if (!user || !pass || pass.length < 8) { showToast("ข้อมูลไม่ถูกต้อง! (รหัสผ่านต้องมี 8 ตัวขึ้นไป)", "error"); return; } 
         closeAdminActionModal(); 
         showToast("กำลังบันทึก...", "success"); 
         await manageUserDB(mode, user, pass, old, role); 
@@ -762,7 +840,6 @@
       } catch (e) { document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-red-500 shrink-0"; } 
     }
 
-    // 🌟 3. แก้ไขปัญหา: ดึง Users จาก Firebase มาเตรียมรอไว้ตั้งแต่ตอนเข้าเว็บ
     window.addEventListener('DOMContentLoaded', async () => { 
       lucide.createIcons(); 
       const isLogged = localStorage.getItem('ink_logged_in') === 'true'; 
@@ -792,27 +869,23 @@
     function closeModal() { document.getElementById('modal').classList.remove('modal-show'); }
     function closeAdminActionModal() { document.getElementById('admin-action-modal').classList.remove('modal-show'); }
     function closeConfirm() { document.getElementById('confirm-modal').classList.remove('modal-show'); }
+    
     function askDeleteUser(u) { 
         document.getElementById('confirm-msg').innerText = `ยืนยันการลบ [ ${u} ]?`; 
         document.getElementById('confirm-modal').classList.add('modal-show'); 
         document.getElementById('confirm-btn').onclick = async () => { 
             document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-orange-500 animate-spin";
-            
-            // 1. ส่งคำสั่งไปลบที่ Google Sheet
             await fetch(`${API_URL}?action=manageUser&mode=delete&user=${u}`); 
-            
-            // 2. ดึงข้อมูลใหม่ล่าสุดมาอัปเดตทับ Firebase ให้ตรงกัน
             const r = await fetch(`${API_URL}?action=getUsers&t=${Date.now()}`); 
             usersDB = await r.json(); 
-            db.ref('users').set(usersDB); // <--- เพิ่มตัวสั่งอัปเดต Firebase ตรงนี้
-            
-            // 3. ปิดหน้าต่างและรีเฟรชจอ
+            db.ref('users').set(usersDB); 
             loadUserManagement(); 
             closeConfirm(); 
             document.getElementById('status-dot').className = "w-3 h-3 rounded-full bg-green-500";
             showToast("ลบพนักงานเรียบร้อย", "success"); 
         }; 
-    }    
+    }
+
     function toggleSidebarMobile(s) { const sb = document.getElementById('sidebar'), ov = document.getElementById('sidebar-overlay'); if(s){sb.classList.remove('sidebar-mobile-hide'); sb.classList.add('sidebar-mobile-show'); ov.classList.remove('hidden');}else{sb.classList.add('sidebar-mobile-hide'); sb.classList.remove('sidebar-mobile-show'); ov.classList.add('hidden');} }
     function toggleNotification() { const p = document.getElementById('notification-panel'); p.classList.toggle('hidden'); if(!p.classList.contains('hidden')){ loadNotificationHistory(); document.getElementById('bell-badge').classList.add('hidden'); } }
     function showToast(m, t) { const c = document.getElementById('toast-container'), toast = document.createElement('div'); toast.className = `${t==='success'?'bg-slate-800':'bg-red-600'} text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 transform translate-y-10 opacity-0 transition-all font-bold`; toast.innerHTML = `<i data-lucide="${t==='success'?'check':'alert-triangle'}" class="w-5 h-5 shrink-0"></i><span class="text-sm uppercase">${m}</span>`; c.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.classList.remove('translate-y-10','opacity-0'), 10); setTimeout(() => { toast.classList.add('translate-y-10','opacity-0'); setTimeout(() => toast.remove(), 500); }, 2000); }
