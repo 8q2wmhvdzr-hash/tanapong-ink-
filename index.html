@@ -56,7 +56,6 @@
             <label class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5 pl-1">รหัสผ่าน</label>
             <div class="relative">
                 <input type="password" id="login-pass" onkeypress="if(event.key==='Enter') document.getElementById('login-btn-action').click()" placeholder="••••••••" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-bold transition-all pr-12">
-                <!-- 🌟 ตาแมว เปิด/ปิด รหัสผ่าน หน้าล็อกอิน -->
                 <button type="button" onclick="togglePasswordVisibility('login-pass', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#102a96] transition-colors outline-none focus:outline-none">
                     <i data-lucide="eye" class="w-5 h-5 show-icon"></i>
                     <i data-lucide="eye-off" class="w-5 h-5 hidden hide-icon"></i>
@@ -177,10 +176,11 @@
     <button id="btn-delete-img" class="hidden px-6 py-3 bg-red-600 text-white font-bold rounded-2xl shadow-lg hover:bg-red-700 flex items-center gap-2 transition-all active:scale-95"><i data-lucide="trash-2" class="w-5 h-5"></i> ลบรูปภาพนี้</button>
   </div>
 
+  <!-- 🌟 อัปเดต Modal ทำรายการ (แสดงชื่อเครื่องตอนรับเข้าให้ชัดเจน) -->
   <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1500] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3.5rem] shadow-2xl p-8 scale-95 transition-transform duration-300">
       <h3 id="modal-title" class="text-2xl font-bold mb-1 text-slate-800"></h3>
-      <p id="modal-sub" class="text-[10px] text-slate-400 mb-6 uppercase break-all font-bold tracking-widest"></p>
+      <p id="modal-sub" class="text-[11px] text-slate-500 mb-6 uppercase break-all font-bold tracking-widest whitespace-pre-line leading-relaxed"></p>
       
       <div id="modal-machine-select" class="mb-4 text-left hidden">
         <label class="block text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 pl-1">โปรดระบุเครื่องที่เบิก</label>
@@ -224,7 +224,6 @@
     </div>
   </div>
 
-  <!-- 🌟 อัปเดตหน้าจัดการ/เพิ่มพนักงาน (เปลี่ยน Dropdown เป็นกล่อง Card 2 ฝั่ง) -->
   <div id="admin-action-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1600] p-4 text-center"> 
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> 
       <div id="admin-action-icon" class="w-16 h-16 rounded-2xl mx-auto mb-6 flex items-center justify-center text-white text-xl font-bold shadow-inner font-bold"></div> 
@@ -239,7 +238,6 @@
             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest font-bold">Password (8+)</label>
             <div class="relative">
                 <input type="password" id="admin-action-pass" onkeypress="if(event.key==='Enter') document.getElementById('admin-action-submit').click()" class="w-full px-5 py-3.5 rounded-2xl bg-slate-50 border-2 border-slate-100 outline-none focus:border-blue-500 text-sm font-semibold font-bold pr-12">
-                <!-- 🌟 ตาแมว เปิด/ปิด รหัสผ่าน หน้าตั้งค่าแอดมิน -->
                 <button type="button" onclick="togglePasswordVisibility('admin-action-pass', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#102a96] transition-colors outline-none focus:outline-none">
                     <i data-lucide="eye" class="w-5 h-5 show-icon"></i>
                     <i data-lucide="eye-off" class="w-5 h-5 hidden hide-icon"></i>
@@ -248,7 +246,6 @@
         </div> 
         <div>
           <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5 pl-1 tracking-widest">ระดับสิทธิ์ (Role)</label>
-          <!-- 🌟 เปลี่ยน Dropdown ให้เป็นการ์ดตัวเลือกสวยๆ -->
           <div class="grid grid-cols-2 gap-3 mt-1">
             <label class="cursor-pointer relative">
               <input type="radio" name="role_select" id="role-user" value="user" class="peer sr-only" checked>
@@ -278,6 +275,7 @@
 
   <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[3000] p-4 text-center"> <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 scale-95 transition-transform duration-300"> <div class="w-16 h-16 rounded-full bg-red-50 text-red-500 mx-auto mb-6 flex items-center justify-center border border-red-100 shadow-inner font-bold"><i data-lucide="trash-2"></i></div> <h3 class="text-2xl font-bold mb-2 text-slate-800 font-bold">ยืนยันการทำรายการ?</h3> <p id="confirm-msg" class="text-sm text-slate-400 mb-8 font-medium px-4"></p> <div class="flex gap-4"><button onclick="closeConfirm()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl hover:bg-slate-200">ยกเลิก</button><button id="confirm-btn" class="flex-1 py-4 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 shadow-xl transition-all">ตกลง</button></div> </div> </div>
   
+  <!-- 🌟 อัปเดต Modal ดูประวัติการทำรายการ (เพิ่มบรรทัดแสดงชื่อเครื่อง/ปลายทาง) -->
   <div id="log-detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all z-[1900] p-4 text-center">
     <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-8 scale-95 transition-transform duration-300 relative text-left">
       <button onclick="document.getElementById('log-detail-modal').classList.remove('modal-show')" class="absolute top-6 right-6 p-2 bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -286,6 +284,10 @@
       <div class="space-y-4 text-sm font-medium text-slate-600 mb-8">
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>วัน-เวลา:</span> <span id="log-det-date" class="text-slate-800 font-bold"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>สินค้า:</span> <span id="log-det-id" class="text-slate-800 font-bold text-right break-words max-w-[70%]"></span></div>
+        
+        <!-- 🌟 เพิ่มบรรทัดนี้ ให้เห็นเลยว่าไปเครื่องไหน -->
+        <div class="flex justify-between border-b border-slate-50 pb-3"><span>เครื่อง/ปลายทาง:</span> <span id="log-det-machine" class="text-[#102a96] font-extrabold text-right break-words max-w-[60%]"></span></div>
+        
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>ประเภท:</span> <span id="log-det-type" class="text-slate-800 font-bold"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>จำนวน:</span> <span id="log-det-qty" class="text-slate-800 font-bold text-lg"></span></div>
         <div class="flex justify-between border-b border-slate-50 pb-3"><span>ผู้ทำรายการ:</span> <span id="log-det-user" class="text-slate-800 font-bold"></span></div>
@@ -299,7 +301,7 @@
 
   <script>
     // ---------------------------------------------------------------------
-    const API_URL = "https://script.google.com/macros/s/AKfycbztS1bL6RG-hEf5st8Rpawv-4fUFc9dMAmxU1ztnvyfyIKrApFrKdBxX5EB5Oafuodj/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbyIUVL15tIN53o9g6iuT85DNE-e_UwF_-vQGM1eeVnYdt5mxF1PP2cLrKJFsGKXzwf-/exec"; 
 
     const firebaseConfig = {
       apiKey: "AIzaSyAhpNP5CJSQfiu4iqxdwp7gOIJMcSQne1o",
@@ -489,6 +491,7 @@
       filter(); 
     }
 
+    // 🌟 แก้ไข Page Title ตอนรับเข้า ไม่ให้แสดงคำว่า (คลังกลาง)
     function changeMode(mode, machine) { 
       currentMode = mode; currentMachine = machine;
       localStorage.setItem('ink_current_mode', mode); localStorage.setItem('ink_current_machine', machine);
@@ -517,13 +520,14 @@
         renderCards(); 
         
         if(mode === 'ALL') document.getElementById('page-title').innerText = "เช็คสต็อกรวมทั้งหมด";
-        if(mode === 'IN') document.getElementById('page-title').innerText = "รับเข้าสต๊อก (คลังกลาง)";
+        if(mode === 'IN') document.getElementById('page-title').innerText = "รับเข้าสต๊อก"; // <--- แก้ไขตรงนี้ครับ
         if(mode === 'SELL') document.getElementById('page-title').innerText = "ขายสินค้าให้ลูกค้า";
         if(mode === 'OUT') document.getElementById('page-title').innerText = `จ่ายออกให้เครื่อง: ${machine}`;
       } 
       if(window.innerWidth < 768) toggleSidebarMobile(false);
     }
 
+    // 🌟 อัปเดต Title และข้อความอธิบายใน Modal รับเข้า ให้เห็นชื่อเครื่องจักรเต็มๆ
     function openModal(id, type, qty) {
       const item = inventory.find(i => i.id === id); 
       currentModalTask = { id, type, oldQty: qty, itemMachine: item.machine }; 
@@ -531,12 +535,24 @@
       document.getElementById('modal').classList.add('modal-show'); 
       
       let title = '';
-      if(type === 'IN') { title = 'รับเข้าสินค้า (คลังกลาง)'; document.getElementById('modal-remark-label').innerText = 'หมายเหตุ (ออปชันเสริม)'; }
-      else if(type === 'OUT') { title = `จ่ายออกเบิกใช้`; document.getElementById('modal-remark-label').innerText = 'หมายเหตุ (ออปชันเสริม)'; }
-      else if(type === 'SELL') { title = 'ขายสินค้า (ให้ลูกค้า)'; document.getElementById('modal-remark-label').innerText = 'ชื่อลูกค้า / เลขที่ SO (ต้องระบุ)'; }
+      let subText = id;
+      
+      if(type === 'IN') { 
+          title = 'รับเข้าสต๊อก'; 
+          subText = `${id}\n(สำหรับ: ${item.machine})`; // <--- แสดงชื่อเครื่องชัดเจน
+          document.getElementById('modal-remark-label').innerText = 'หมายเหตุ (ออปชันเสริม)'; 
+      }
+      else if(type === 'OUT') { 
+          title = `จ่ายออกเบิกใช้`; 
+          document.getElementById('modal-remark-label').innerText = 'หมายเหตุ (ออปชันเสริม)'; 
+      }
+      else if(type === 'SELL') { 
+          title = 'ขายสินค้า (ให้ลูกค้า)'; 
+          document.getElementById('modal-remark-label').innerText = 'ชื่อลูกค้า / เลขที่ SO (ต้องระบุ)'; 
+      }
       
       document.getElementById('modal-title').innerText = title; 
-      document.getElementById('modal-sub').innerText = id;
+      document.getElementById('modal-sub').innerText = subText;
       document.getElementById('modal-qty').value = ''; document.getElementById('modal-remark').value = '';
     }
 
@@ -658,7 +674,6 @@
         lucide.createIcons(); 
     }
     
-    // 🌟 ระบบเปิดปิดรหัสผ่านตาแมว
     function togglePasswordVisibility(inputId, btnElement) {
         const input = document.getElementById(inputId);
         const showIcon = btnElement.querySelector('.show-icon');
@@ -682,12 +697,10 @@
         document.getElementById('admin-action-user').value = idx !== null ? usersDB[idx][0] : ''; 
         document.getElementById('admin-action-pass').value = idx !== null ? usersDB[idx][1] : ''; 
         
-        // 🌟 ตั้งค่ากล่องให้ตรงกับ Role ที่ผู้ใช้มี
         const role = idx !== null ? usersDB[idx][2] : 'user'; 
         if(role === 'admin') document.getElementById('role-admin').checked = true;
         else document.getElementById('role-user').checked = true;
         
-        // 🌟 รีเซ็ตตาแมวให้ปิดรหัสผ่านตอนเปิดหน้าจอเสมอ
         const passInput = document.getElementById('admin-action-pass');
         passInput.type = "password";
         const btn = passInput.nextElementSibling;
@@ -720,9 +733,14 @@
         await manageUserDB(mode, user, pass, old, role); 
     };
 
-    function showLogDetail(date, id, type, qty, user, remark) { 
+    // 🌟 อัปเดต Modal โชว์รายละเอียด ให้แสดงบรรทัด "เครื่อง/ปลายทาง" ด้วย
+    function showLogDetail(date, id, type, qty, user, remark, machine) { 
       document.getElementById('log-det-date').innerText = date; 
       document.getElementById('log-det-id').innerText = id; 
+      
+      // อัปเดตชื่อเครื่องที่บันทึกไว้ในประวัติ
+      document.getElementById('log-det-machine').innerText = machine || '-';
+      
       let tDisplay = type === 'IN' ? 'รับเข้า (IN)' : type === 'OUT' ? 'จ่ายออก (OUT)' : type === 'SELL' ? 'ขาย (SELL)' : 'แก้ไขสต็อก (EDIT)';
       document.getElementById('log-det-type').innerText = tDisplay; 
       document.getElementById('log-det-type').className = type === 'IN' ? 'text-green-600 font-bold' : type === 'SELL' ? 'text-blue-600 font-bold' : type === 'OUT' ? 'text-amber-500 font-bold' : 'text-orange-500 font-bold'; 
@@ -743,6 +761,7 @@
       }
     }
 
+    // 🌟 ดึงชื่อเครื่องจาก Log List เพื่อส่งให้ Modal แสดงผล
     function renderLogsList(logs) {
         const list = document.getElementById('notification-list'); 
         if (!logs || logs.length === 0) { list.innerHTML = '<p class="text-center py-4 text-slate-400 font-medium text-xs">ไม่มีประวัติ</p>'; return; } 
@@ -757,6 +776,8 @@
             let tIdx = l.findIndex(v => ['IN', 'OUT', 'SELL', 'EDIT'].includes(String(v).trim().toUpperCase()));
             let tShowRaw = tIdx !== -1 ? String(l[tIdx]).trim().toUpperCase() : 'UNKNOWN';
             
+            // ดึงข้อมูลชื่อเครื่องจากตำแหน่งคอลัมน์ C มาแสดงผลในประวัติ 
+            let safeMachine = tIdx >= 3 ? String(l[tIdx - 3] || '-').replace(/'/g, "\\'") : String(l[2] || '-').replace(/'/g, "\\'");
             let safeId = tIdx > 0 ? String(l[tIdx - 1] || '-').replace(/'/g, "\\'") : String(l[4] || '-').replace(/'/g, "\\'");
             let safeQty = tIdx !== -1 ? String(l[tIdx + 1] || '0') : String(l[6] || '0');
             let safeUser = tIdx !== -1 ? String(l[tIdx + 2] || '-').replace(/'/g, "\\'") : String(l[7] || '-').replace(/'/g, "\\'");
@@ -764,7 +785,7 @@
 
             let tShow = tShowRaw==='IN'?'รับเข้า':tShowRaw==='OUT'?'จ่ายออก':tShowRaw==='SELL'?'ขาย':tShowRaw==='EDIT'?'แก้ไขเป็น':tShowRaw;
             
-            return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${tShowRaw}', '${safeQty}', '${safeUser}', '${safeRemark}')" class="py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-3 -mx-3 rounded-2xl transition-all"><div class="flex justify-between items-start mb-1.5"><span class="text-[14px] font-bold text-slate-800 pr-2 leading-tight">${safeId}</span><span class="text-[10px] text-slate-400 font-bold shrink-0 pt-0.5">${timeStr}</span></div><div class="text-[12px] font-bold text-slate-500">${tShow} <span class="text-slate-800">${safeQty}</span> ชิ้น</div></div>`; 
+            return `<div onclick="showLogDetail('${fullDateStr}', '${safeId}', '${tShowRaw}', '${safeQty}', '${safeUser}', '${safeRemark}', '${safeMachine}')" class="py-3 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 px-3 -mx-3 rounded-2xl transition-all"><div class="flex justify-between items-start mb-1.5"><span class="text-[14px] font-bold text-slate-800 pr-2 leading-tight">${safeId}</span><span class="text-[10px] text-slate-400 font-bold shrink-0 pt-0.5">${timeStr}</span></div><div class="text-[12px] font-bold text-slate-500">${tShow} <span class="text-slate-800">${safeQty}</span> ชิ้น</div></div>`; 
         }).join('');
     }
 
